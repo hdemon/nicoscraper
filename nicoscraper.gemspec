@@ -20,17 +20,19 @@ Gem::Specification.new do |s|
   s.files = [
     ".document",
     "Gemfile",
+    "Gemfile.lock",
     "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "lib/nicoscraper.rb",
-    "lib/crawler.rb",
-    "lib/mylist.rb",
-    "lib/movie.rb",
     "lib/connector.rb",
     "lib/converter.rb",
+    "lib/crawler.rb",
+    "lib/movie.rb",
+    "lib/mylist.rb",
+    "lib/nicoscraper.rb",
     "lib/parser.rb",
+    "nicoscraper.gemspec",
     "test/helper.rb",
     "test/test_nicoscraper.rb"
   ]
