@@ -13,7 +13,10 @@ title: Jekyll-aid
 </nav>
 
     {% for posts in category %}
+    {% for post in posts %}
+    {{ post }}
 {{ post.content }}
+      {% endfor %}
       {% endfor %}
 
 <!--
