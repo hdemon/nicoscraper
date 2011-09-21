@@ -3,4 +3,4 @@ require 'ruby-debug'
 
 require 'movie'
 require 'mylist'
-require 'getmovie'
+require 'searcher'

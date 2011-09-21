@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Masami Yonehara}]
-  s.date = %q{2011-09-20}
+  s.date = %q{2011-09-21}
   s.description = %q{It scrape movies and mylists of Niconico douga.
   }
   s.email = %q{zeitdiebe@gmail.com}
@@ -27,11 +27,11 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/connector.rb",
     "lib/converter.rb",
-    "lib/crawler.rb",
     "lib/movie.rb",
     "lib/mylist.rb",
     "lib/nicoscraper.rb",
     "lib/parser.rb",
+    "lib/searcher.rb",
     "nicoscraper.gemspec",
     "test/helper.rb",
     "test/test_nicoscraper.rb"
