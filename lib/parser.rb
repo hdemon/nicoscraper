@@ -1,8 +1,10 @@
 # -*- encoding: utf-8 -*-
+$:.unshift File.dirname(__FILE__) 
+
 require 'rubygems'
 require 'xml'
 require 'time'
-require 'converter'
+require 'converter.rb'
 
 module NicoParser
   public
@@ -152,7 +154,7 @@ module NicoParser
           end
         when "subtitle"  
           doc.read
-          parsed["entry"][n]["description"] = doc.value
+          parsed["mylist"]["description"] = doc.value
         when "id"
           if n == -1
             doc.read
@@ -161,7 +163,7 @@ module NicoParser
           else
             doc.read
             parsed["entry"][n]["item_id"] =
-                Extract.itemId(doc.value)
+              Extract.itemId(doc.value)
           end    
         when "updated"
           doc.read
@@ -176,54 +178,30 @@ module NicoParser
         when "content"
           doc.read
           html = doc.value   
-      
-          memo =
-            html.slice(
-              /<p\sclass\=\"nico-memo\"\>[^\<]{1,}/
-            ).to_s.slice(21, 999)
-          
+
+          /(<p\sclass=\"nico-memo\"\>)([^\<]{1,})/ =~ html
+          memo = $2
+                   
           /(<p\sclass=\"nico-thumbnail\">.+src=\")(http:\/\/[^\"]{1,})/ =~ html
           thumbnail_url = $2
-                                     
-          description = 
-            html.slice(
-              /<p\sclass\=\"nico-description\"\>[^\<]{1,}/
-            ).to_s.slice(31, 999)  
-            
-          length = 
-            Convert.toSeconds(
-              html.slice(
-                /<strong\sclass\=\"nico-info-length\"\>[^\<]{1,}/
-              ).to_s.slice(33, 999)
-            )       
-             
-          first_retrieve =
-            Convert.japToUnix(
-              html.slice(
-                /<strong\sclass\=\"nico-info-date\"\>[^\<]{1,}/
-              ).to_s.slice(31, 999)
-            )    
-            
-          view = 
-            Convert.commaRemover(
-              html.slice(
-                /<strong\sclass\=\"nico-numbers-view\"\>[^\<]{1,}/
-              ).to_s.slice(34, 999)
-            ) 
-                        
-          res =
-            Convert.commaRemover(
-              html.slice(
-                /<strong\sclass\=\"nico-numbers-res\"\>[^\<]{1,}/
-              ).to_s.slice(33, 999)
-            ) 
-                        
-          mylist =
-            Convert.commaRemover(
-              html.slice(
-                /<strong\sclass\=\"nico-numbers-mylist\"\>[^\<]{1,}/
-              ).to_s.slice(36, 999)
-            ) 
+          
+          /(<p\sclass\=\"nico-description\"\>)([^\<]{1,})/ =~ html
+          description = $2
+
+          /(<p\sclass\=\"nico-info-length\"\>)([^\<]{1,})/ =~ html
+          length = $2
+
+          /(<p\sclass\=\"nico-info-date\"\>)([^\<]{1,})/ =~ html
+          first_retrieve = $2
+
+          /(<p\sclass\=\"nico-numbers-view\"\>)([^\<]{1,})/ =~ html
+          view = $2
+
+          /(<p\sclass\=\"nico-numbers-res\"\>)([^\<]{1,})/ =~ html
+          res = $2
+
+          /(<p\sclass\=\"nico-numbers-mylist\"\>)([^\<]{1,})/ =~ html
+          mylist = $2
           
           parsed["entry"][n]["memo"] = memo 
           parsed["entry"][n]["thumbnail_url"] = thumbnail_url 
@@ -238,6 +216,7 @@ module NicoParser
     end
 
     doc.close 
+
     parsed
   end
     

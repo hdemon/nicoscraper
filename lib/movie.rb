@@ -1,12 +1,14 @@
 ﻿# -*- encoding: utf-8 -*-
+$:.unshift File.dirname(__FILE__) 
+
 require 'rubygems'
 require 'ruby-debug'
 require 'damerau-levenshtein'
 require 'kconv'
 
-require 'parser'
-require 'mylist'
-require 'connector'
+require 'parser.rb'
+require 'mylist.rb'
+require 'connector.rb'
   
 class Movie  
   def initialize(video_id)
@@ -19,9 +21,9 @@ class Movie
   public
   
   # 指定されたマイリストに自分が入っていれば、真を返す。  
-  def isBelongsTo (_mylistId, &block)
+  def isBelongsTo (mylistId, &block)
     isBelongs = false
-    thisMl = Mylist.new(_mylistId)
+    thisMl = Mylist.new(mylistId)
     thisMl.getInfoLt
     
     thisMl.movies.each { |movie|
@@ -29,14 +31,14 @@ class Movie
     }   
   
     if isBelongs
-      puts "\sThis movie is found in mylist/" + _mylistId
+      puts "\sThis movie is found in mylist/" + mylistId.to_s
     else
-      puts "\sThis movie is not found in mylist/" + _mylistId
+      puts "\sThis movie is not found in mylist/" + mylistId.to_s
     end
     
     # 無駄なアクセスを省くため、マイリスト中の動画に関する追加処理があれば、
     # ブロックとして実行できる。
-    block.call(thisMl)
+    block.call(thisMl) if block != nil
     
     return isBelongs
   end
@@ -63,7 +65,7 @@ class Movie
     
     mylistIdAry.each { |_mylistId|
       belongsTo = isBelongsTo(_mylistId) { |mylistObj|        
-        similarity = mylistObj.isSeries 
+        similarity = mylistObj.getSimilarity 
         puts "\sSimilarity:\t" + similarity.to_s
       }
       puts belongsTo
@@ -103,22 +105,20 @@ class Movie
   end
   
   def getInfo
-    con = Connector.new('xml')
+    con = GetThumbInfoConnector.new()
     host = 'ext.nicovideo.jp'
     entity = '/api/getthumbinfo/' + @video_id
     con.setWait(nil)
-    xml = con.xmlGet(host, entity)
-    
-    unless
-      xml =~ /<nicovideo_thumb_response\sstatus=\"fail\">/ ||
-      xml == "failed"
+    result = con.get(host, entity)
+
+    if
+      result["order"] == "success"
     then
-      param = NicoParser.getThumbInfo(xml)
-      set(param)
+      parsed = NicoParser.getThumbInfo(result["body"])
+      set(parsed)
       @available = true
     else
       @available = false
-      return "failed"
     end
   end
     
@@ -239,8 +239,8 @@ class Movie
         @thumb_type = param
     	when "embeddable"
         @embeddable = param
-    	when "movieNum_live_play"
-        @movieNum_live_play = param
+    	when "no_live_play"
+        @no_live_play = param
     	when "tags_jp"
         @tags_jp = param
       when "tags_tw"
@@ -290,7 +290,7 @@ class Movie
   attr_accessor	:watch_url
   attr_accessor	:thumb_type
   attr_accessor	:embeddable
-  attr_accessor	:movieNum_live_play
+  attr_accessor	:no_live_play
   attr_accessor	:tags_jp
   attr_accessor	:tags_tw
   attr_accessor	:user_id

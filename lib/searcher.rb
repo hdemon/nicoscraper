@@ -1,4 +1,6 @@
-# -*- encoding: utf-8 -*-
+# -*- encoding: utf-8 -*-# -*- encoding: utf-8 -*-
+$:.unshift File.dirname(__FILE__) 
+
 require 'rubygems'
 require 'ruby-debug'
 
@@ -6,65 +8,13 @@ require 'time'
 require 'mechanize'
 require 'kconv'
 
-require 'parser'
+require 'parser.rb'
 
 
-$wait_byTag = {
-  'consec_count'  => 10,  # 連続してリクエストする回数
-  'consec_wait'   => 10,  # 連続リクエスト後のウェイト
-  'each'          => 10,  # 連続リクエスト時の、1リクエスト毎のウェイト
-   
-  'rejected'      => 120, # アクセス拒絶時（「短時間での連続アクセスは・・・」）
-                          # の場合の再試行までの時間
-  '403'           => 600, # "403"時の再試行までのウェイト
-  'increment'     => 1,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
-
-  'timeout'       => 5,   # タイムアウト時の、再試行までのウェイト
-  '500'           => 600, # "500"時の再試行までのウェイト
-  '503'           => 600, # "503"時の再試行までのウェイト
-
-  'allowance_time'=> 5    # 再試行回数の限度
-}
-
-$wait_byMylistLt = {
-  'consec_count'  => 10, 
-  'consec_wait'   => 10, 
-  'each'          => 10, 
-
-  'rejected'      => 120,   
-  '403'           => 600,   
-  'increment'     => 1,   
-  'timeout'       => 5,    
-  '500'           => 600, 
-  '503'           => 600, 
-  'allowance_time'=> 5  
-}
-
-module GetMovie   
-  public
-
-  def byTag (tag, sort, waitObj, &block)
-    gMByTag = GetMovieByTag.new()
-    gMByTag.execute(tag, sort, waitObj) { |result, page|
-      block.call(result, page)
-    }
-  end
-
-  def byTagLt (tag, sort, waitObj, &block)
-    gMByTagLt = GetMovieByTagLt.new()
-    gMByTagLt.execute(tag, sort, waitObj) { |result, page|
-      block.call(result, page)
-    }
-  end
-    
-  module_function :byTag
-  module_function :byTagLt
-end
-
-class GetMovieByTagSuper
+class SearchByTagSuper
   private
 
-  def get (tag, sort, page, method, waitObj)
+  def get(tag, sort, page, method, waitObj)
     paramAry = []
     
     case sort
@@ -94,7 +44,7 @@ class GetMovieByTagSuper
         sortStr = 'sort=l&order=a'
     end
     
-    if page != 1 then paramAry.push("page=#{page}"); end
+    paramAry.push("page=#{page}") if page != 1
     paramAry.push(sortStr)
     if method == "atom" then paramAry.push("rss=atom&numbers=1") end
     param = tag + "?" + paramAry.join('&')
@@ -102,18 +52,16 @@ class GetMovieByTagSuper
     host = 'www.nicovideo.jp'
     entity = '/tag/' + param
 
-    @con.setWait(waitObj)
-    @con.get(host, entity)
+    @connector.setWait(waitObj)
+    @connector.get(host, entity)
   end
 
-  public
-
-  def loop (tag, sort, method, waitObj, &block)
-    termFlag = false
-    page   = 1
+  def loop(tag, sort, method, waitObj, &block)
+    termFlag    = false
+    page        = 1
+    movieObjAry = []
    
     begin
-       result  = []
        response = get(
         tag,
         sort,
@@ -122,9 +70,16 @@ class GetMovieByTagSuper
         waitObj
       )
 
-      if response
-        result = parse(response)
-        termFlag = block.call(result, page)
+      if response["order"] == "success"
+        result = parse(response["body"])
+        result.each { |each|
+          movie = Movie.new(each["video_id"]) 
+          each["available"] = true
+          movie.set(each)
+          movieObjAry.push(movie)
+        }
+
+        termFlag = block.call(movieObjAry, page)
       else
         termFlag = true
       end
@@ -134,13 +89,12 @@ class GetMovieByTagSuper
   end
 end
 
-
-class GetMovieByTag < GetMovieByTagSuper
+class SearchByTag < SearchByTagSuper
   def initialize
-    @NumOfSearched = 32
+    @numOfSearched = 32
     @incrAmt = 0.2
 
-    @con = Connector.new('mech')
+    @connector = Connector.new('mech')
     
     # HTML中の各パラメータの所在を示すXPath
     @videoIdXP  = "//div[@class='uad_thumbfrm']/table/tr/td/p/a"
@@ -154,16 +108,16 @@ class GetMovieByTag < GetMovieByTagSuper
   def parse(movieNum)
     result = []
     
-    video_id  = /(sm|nm)[0-9]{1,}/.match(@con.mech.page.search(@videoIdXP)[movieNum]['href'])[0]
-      lengthStr = @con.mech.page.search(@lengthXP)[movieNum].text.split(/\:/)
+    video_id  = /(sm|nm)[0-9]{1,}/.match(@connector.mech.page.search(@videoIdXP)[movieNum]['href'])[0]
+      lengthStr = @connector.mech.page.search(@lengthXP)[movieNum].text.split(/\:/)
     length    = lengthStr[0].to_i * 60 + lengthStr[1].to_i
-    view      = @con.mech.page.search(@viewXP)[movieNum]
+    view      = @connector.mech.page.search(@viewXP)[movieNum]
                 .text.gsub(/\,/, '').to_i
-    res       = @con.mech.page.search(@resXP)[movieNum]
+    res       = @connector.mech.page.search(@resXP)[movieNum]
                 .text.gsub(/\,/, '').to_i
-    mylist    = @con.mech.page.search(@mylistXP)[movieNum]
+    mylist    = @connector.mech.page.search(@mylistXP)[movieNum]
                 .text.gsub(/\,/, '').to_i
-    ad        = @con.mech.page.search(@adXP)[movieNum]
+    ad        = @connector.mech.page.search(@adXP)[movieNum]
                 .text.gsub(/\,/, '').to_i
 
     result.push({
@@ -183,11 +137,11 @@ class GetMovieByTag < GetMovieByTagSuper
   end
 end
 
-class GetMovieByTagLt < GetMovieByTagSuper
+class SearchByTagLt < SearchByTagSuper
   def initialize
-    @NumOfSearched = 32
+    @numOfSearched = 32
     @incrAmt = 0.2
-    @con = Connector.new('atom')
+    @connector = SearchByTagAtomConnector.new()
   end
 
   def parse(xml)
