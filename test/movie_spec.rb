@@ -1,13 +1,11 @@
 # -*- encoding: utf-8 -*-
 $:.unshift File.dirname(__FILE__) + "/../lib"
 
-require 'movie.rb'
-require 'mylist.rb'
-require 'searcher.rb'
+require 'nicos.rb'
 
-describe Movie, "After executiton of 'getInfo' method" do  
+describe Nicos::Movie, "After executiton of 'getInfo' method" do  
   before(:all) do
-    @movie = Movie.new("sm1097445")
+    @movie = Nicos::Movie.new("sm1097445")
     @movie.getInfo
   end
 
@@ -46,9 +44,9 @@ describe Movie, "After executiton of 'getInfo' method" do
   end
 end
 
-describe Movie, "when access with non-existent video_id" do
+describe Nicos::Movie, "when access with non-existent video_id" do
   before(:all) do
-    @movie = Movie.new("sm*nonexistent")
+    @movie = Nicos::Movie.new("sm*nonexistent")
     @movie.getInfo
   end
 
@@ -57,9 +55,9 @@ describe Movie, "when access with non-existent video_id" do
   end    
 end
 
-describe Mylist, "After executiton of 'getInfoLt' method" do  
+describe Nicos::Mylist, "After executiton of 'getInfoLt' method" do  
   before(:all) do
-    @mylist = Mylist.new(15196568)
+    @mylist = Nicos::Mylist.new(15196568)
     @mylist.getInfoLt
     puts @mylist
   end
@@ -93,7 +91,7 @@ end
 describe "When execute 'SearchByTagLt.execute' method " +
           "passing following argument" do  
   before(:all) do
-    searcher = SearchByTagLt.new()
+    searcher = Nicos::Searcher::ByTagLt.new()
     searcher.execute("ゆっくり実況プレイpart1リンク", "post_old", nil) { |result|
       @result = result
     }
@@ -101,7 +99,7 @@ describe "When execute 'SearchByTagLt.execute' method " +
 
   it "should have Array of movie objects." do
     @result   .should be_kind_of(Array)
-    @result[0].should be_instance_of(Movie)
+    @result[0].should be_instance_of(Nicos::Movie)
   end
 
   it "should contains movie objects that have following structure." do

@@ -9,8 +9,8 @@ require 'kconv'
 require 'parser.rb'
 require 'mylist.rb'
 require 'connector.rb'
-  
-class Movie  
+
+class Nicos::Movie  
   def initialize(video_id)
     @video_id   = video_id
     @available  = false
@@ -23,7 +23,7 @@ class Movie
   # 指定されたマイリストに自分が入っていれば、真を返す。  
   def isBelongsTo (mylistId, &block)
     isBelongs = false
-    thisMl = Mylist.new(mylistId)
+    thisMl = Nicos::Mylist.new(mylistId)
     thisMl.getInfoLt
     
     thisMl.movies.each { |movie|
@@ -76,8 +76,7 @@ class Movie
     }
     
     sMylistIdAry.each { |mylistId|
-      puts mylistId
-      mlObjAry.push( Mylist.new(mylistId) )
+      mlObjAry.push( Nicos::Mylist.new(mylistId) )
     }
     
     puts "\sDiscern logic terminated."
@@ -105,7 +104,7 @@ class Movie
   end
   
   def getInfo
-    con = GetThumbInfoConnector.new()
+    con = Nicos::Connector::GetThumbInfo.new()
     host = 'ext.nicovideo.jp'
     entity = '/api/getthumbinfo/' + @video_id
     con.setWait(nil)
@@ -114,8 +113,9 @@ class Movie
     if
       result["order"] == "success"
     then
-      parsed = NicoParser.getThumbInfo(result["body"])
+      parsed = Nicos::Parser::getThumbInfo(result["body"])
       set(parsed)
+      p self
       @available = true
     else
       @available = false

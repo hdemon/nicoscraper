@@ -9,8 +9,7 @@ require 'parser.rb'
 require 'movie.rb'
 require 'connector.rb'
 
-
-class Mylist
+class Nicos::Mylist
   def initialize (mylist_id)
     @mylist_id  = mylist_id    
     @movies     = []
@@ -57,7 +56,7 @@ class Mylist
   end
 
   def getInfo
-    con = Connector.new('mech')
+    con = Nicos::Connector::Html.new('mech')
     reqUrl = 'http://www.nicovideo.jp' +
       '/mylist/' + @mylist_id.to_s
     con.setWait(nil)
@@ -129,12 +128,12 @@ class Mylist
     mvJson = mvJson.scan(/\".{1,}/)[0]
     mvJson = mvJson.slice(0, mvJson.length - 5)
     #mvJson = mvJson.split('},{')
-    mvJson = Unicode.unescape(mvJson).split('},{')
+    mvJson = Nicos::Unicode.unescape(mvJson).split('},{')
     
     mvJson.each { |e|
       e = "{" + e + "}"
       param = JSON.parse(e) 
-      movie = Movie.new(param['item_data']['video_id'])
+      movie = Nicos::Movie.new(param['item_data']['video_id'])
       movie.set(param)
       
       @movies.push(movie)
@@ -142,7 +141,7 @@ class Mylist
   end
   
   def getInfoLt
-    con = MylistAtomConnector.new()
+    con = Nicos::Connector::MylistAtom.new()
     host = 'www.nicovideo.jp'
     puts @mylist_id
     entity = '/mylist/' + @mylist_id.to_s + '?rss=atom&numbers=1'
@@ -152,17 +151,18 @@ class Mylist
     if
       result["order"] == "success"
     then
-      parsed = NicoParser.mylistRss(result["body"])
+      parsed = Nicos::Parser::mylistAtom(result["body"])
       
       parsed["entry"].each { |e|
-        movie = Movie.new(e["video_id"])
+        movie = Nicos::Movie.new(e["video_id"])
         e["available"] = true
         movie.set(e)
         @movies.push(movie)
       }
-      
-      set(parsed["mylist"])
+
       @available = true
+      set(parsed["mylist"])
+      p self
     else
       @available = false
     end  

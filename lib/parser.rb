@@ -6,9 +6,7 @@ require 'xml'
 require 'time'
 require 'converter.rb'
 
-module NicoParser
-  public
-  
+module Nicos::Parser
   def getThumbInfo(xml)
     doc = XML::Reader.string(
       xml,
@@ -37,7 +35,7 @@ module NicoParser
         when "first_retrieve"
           label = doc.name
           doc.read
-          parsed[label] =  Convert.iso8601ToUnix(doc.value)        
+          parsed[label] =  Nicos::Converter.iso8601ToUnix(doc.value)        
         when "length"
           doc.read
           lengthStr = doc.value.split(/\:/)
@@ -60,7 +58,7 @@ module NicoParser
     parsed
   end
   
-  def tagRss(xml)
+  def tagAtom(xml)
     doc = XML::Reader.string(
       xml,
       :options => XML::Parser::Options::NOBLANKS |
@@ -85,7 +83,7 @@ module NicoParser
         when "published", "updated"
           label = doc.name
           doc.read
-          parsed[n][label] =  Convert.iso8601ToUnix(doc.value)
+          parsed[n][label] =  Nicos::Converter.iso8601ToUnix(doc.value)
         when "p"
           doc.move_to_attribute("class")
           case doc.value
@@ -119,7 +117,7 @@ module NicoParser
     parsed
   end
  
-  def mylistRss(xml)    
+  def mylistAtom(xml)    
     doc = XML::Reader.string(
       xml,
       :options => XML::Parser::Options::NOBLANKS |
@@ -150,7 +148,7 @@ module NicoParser
           if n != -1
             doc.move_to_attribute("href")
             parsed["entry"][n]["video_id"] =
-              Extract.videoId(doc.value)
+              Nicos::Extractor.videoId(doc.value)
           end
         when "subtitle"  
           doc.read
@@ -159,16 +157,16 @@ module NicoParser
           if n == -1
             doc.read
             parsed["mylist"]["mylist_id"] = 
-              Extract.mylistId(doc.value)
+              Nicos::Extractor.mylistId(doc.value)
           else
             doc.read
             parsed["entry"][n]["item_id"] =
-              Extract.itemId(doc.value)
+              Nicos::Extractor.itemId(doc.value)
           end    
         when "updated"
           doc.read
           parsed["mylist"]["updated"] = 
-            Convert.iso8601ToUnix(doc.value)
+            Nicos::Converter.iso8601ToUnix(doc.value)
         when "name"
           doc.read
           parsed["mylist"]["author"] = doc.value              
@@ -220,7 +218,7 @@ module NicoParser
     parsed
   end
     
-  module_function :tagRss
-  module_function :mylistRss
+  module_function :tagAtom
+  module_function :mylistAtom
   module_function :getThumbInfo
 end

@@ -2,7 +2,7 @@
 require 'xml'
 require 'time'
 
-module Convert
+module Nicos::Converter
   def iso8601ToUnix(str)
     Time.strptime(str, "%Y-%m-%dT%H:%M:%S").to_i
   end
@@ -30,7 +30,7 @@ module Convert
   module_function :commaRemover
 end
 
-module Extract
+module Nicos::Extractor
   def mylistId(str)
     /(mylist\/)([0-9]{1,})/ =~ str
     $2.to_i
@@ -50,7 +50,7 @@ module Extract
   module_function :videoId
 end
 
-module Unicode
+module Nicos::Unicode
   def escape(str)
     ary = str.unpack("U*").map!{|i| "\\u#{i.to_s(16)}"}
     ary.join
