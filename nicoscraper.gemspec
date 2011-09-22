@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{nicoscraper}
-  s.version = "0.2.1"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Masami Yonehara}]
@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   s.email = %q{zeitdiebe@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
+    "README.md",
     "README.rdoc"
   ]
   s.files = [
@@ -22,6 +23,7 @@ Gem::Specification.new do |s|
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
+    "README.md",
     "README.rdoc",
     "Rakefile",
     "VERSION",
@@ -29,13 +31,12 @@ Gem::Specification.new do |s|
     "lib/converter.rb",
     "lib/movie.rb",
     "lib/mylist.rb",
+    "lib/nicos.rb",
     "lib/nicoscraper.rb",
     "lib/parser.rb",
     "lib/searcher.rb",
     "nicoscraper.gemspec",
-    "test/helper.rb",
-    "test/movie_spec.rb",
-    "test/test_nicoscraper.rb"
+    "test/movie_spec.rb"
   ]
   s.homepage = %q{http://github.com/hdemon/nicoscraper}
   s.licenses = [%q{MIT}]
