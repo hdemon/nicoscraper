@@ -9,7 +9,11 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Masami Yonehara}]
+<<<<<<< HEAD
   s.date = %q{2011-09-22}
+=======
+  s.date = %q{2011-09-21}
+>>>>>>> dev
   s.description = %q{It scrape movies and mylists of Niconico douga.
   }
   s.email = %q{zeitdiebe@gmail.com}

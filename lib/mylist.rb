@@ -1,11 +1,13 @@
 ﻿# -*- encoding: utf-8 -*-
+$:.unshift File.dirname(__FILE__) 
+
 require 'rubygems'
 require 'ruby-debug'
 require 'kconv'
 
-require 'parser'
-require 'movie'
-require 'connector'
+require 'parser.rb'
+require 'movie.rb'
+require 'connector.rb'
 
 
 class Mylist
@@ -15,49 +17,9 @@ class Mylist
     @available  = false
   end
   
-  def simOfTitle  
-    match = false
-    dl = DamerauLevenshtein
-    d = 0.0
-    
-    puts "matching..."
-    
-    # O(n^2)なのでどうにかしたい。しかし、最大でも500C2=125000なので、
-    # 日々の利用については許容できると思う、
-    @movies.each { |myself|
-      @movies.each { |amovieNumther|
-        _d = dl.distance(myself.title, amovieNumther.title)
-        d += _d
-      }
-    }
-    
-    similarity = 1 - ( (d / @movies.length) / title.length )
-    puts "Similarity: " + similarity.to_s
-    similarity
-  end 
-
-  def userId
-    idGroup = {}
-    samePublisher = false
-    threshold = 0.9
-    
-    @movies.each { |movie|
-      idGroup[movie.user_id] += 1
-    }
-    
-    idGroup.each { |group|
-      if @movies.length / threshold < group.length
-        samePublicher = true  
-      end
-    }
-    
-    return samePublisher    
-  end
-  
-  # 自分がシリーズをまとめたマイリストであるかを判定する。
-  # 判定基準は、1.一定数以上の動画の投稿者が、マイリスト作成者と同じであること。
-  # 2.タイトルの類似度が、定められた基準以上であること。
-  def isSeries
+  # 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
+  # 類似度の平均を返す。
+  def getSimilarity
     l = @movies.length - 1
     dlc = DamerauLevenshtein
     dl = 0.0
@@ -180,17 +142,17 @@ class Mylist
   end
   
   def getInfoLt
-    con = Connector.new('xml')
+    con = MylistAtomConnector.new()
     host = 'www.nicovideo.jp'
     puts @mylist_id
     entity = '/mylist/' + @mylist_id.to_s + '?rss=atom&numbers=1'
     con.setWait(nil)
-    xml = con.xmlGet(host, entity)
-    
-    unless
-      xml == "failed"
-    then  
-      parsed = NicoParser.mylistRss(xml)
+    result = con.get(host, entity)
+
+    if
+      result["order"] == "success"
+    then
+      parsed = NicoParser.mylistRss(result["body"])
       
       parsed["entry"].each { |e|
         movie = Movie.new(e["video_id"])
@@ -201,7 +163,9 @@ class Mylist
       
       set(parsed["mylist"])
       @available = true
-    end    
+    else
+      @available = false
+    end  
   end  
 
   def set(paramObj)
@@ -252,7 +216,8 @@ class Mylist
 	attr_accessor :create_time  
 	attr_accessor :update_time  
 	attr_accessor :icon_id    
-	attr_accessor :sort_order   
+  attr_accessor :sort_order   
+  attr_accessor :author   
   
   attr_accessor :movies     
 end

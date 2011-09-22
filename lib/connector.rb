@@ -1,86 +1,264 @@
 # -*- encoding: utf-8 -*-
+$:.unshift File.dirname(__FILE__) 
+
 require 'rubygems'
 require 'ruby-debug'
 require 'net/http'
 
+
 class Connector
-  def initialize(mode)
-    @mode = mode
+  def initialize
     # デフォルトのウェイト設定
+    @seqTime = 0
+
     @waitConfig = {
-      'consec_count'  => 10,    # 連続してリクエストする回数
-      'consec_wait'   => 10,    # 連続リクエスト後のウェイト
-      'each'          => 10,    # 連続リクエスト時の、1リクエスト毎のウェイト
- 
-      '200-abnormal'  => 1,   # アクセス拒絶時（「短時間での連続アクセスは・・・」）の場合の再試行までの時間
-      'unavailable'   => 10,
-      '403'           => 1,   # "403"時の再試行までのウェイト
-      '404'           => 1,   # "403"時の再試行までのウェイト
-      'increment'     => 1,     # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
+      'seqAccLimit' => 10,  # 連続してリクエストする回数
+      'afterSeq'    => 10,  # 連続リクエスト後のウェイト
+      'each'        => 1,   # 連続リクエスト時の、1リクエスト毎のウェイト
 
-      'timeout'       => 5,     # タイムアウト時の、再試行までのウェイト
-      '500'           => 1,   # "500"時の再試行までのウェイト
-      '503'           => 1,   # "503"時の再試行までのウェイト
- 
-      'retryLimit'    => 5    # 再試行回数の限度
+      'increment'   => 1,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
+      ''            => 100,
+
+      'deniedSeqReq'=> {
+        'retryLimit'  => 3,
+        'wait'        => 120
+      },
+      
+      'serverIsBusy'=> {
+        'retryLimit'  => 3,
+        'wait'        => 120
+      },
+      
+      'serviceUnavailable' => {
+        'retryLimit'  => 3,
+        'wait'        => 120
+      },
+      
+      'timedOut' => {
+        'retryLimit'  => 3,
+        'wait'        => 10
+      }
     }
-    
-    # 1つの検索結果画面に表示される動画の数。現時点では10個。
-    @NumOfSearched = 32
-    
-    if @mode == "mech"
-      @mech = Mechanize.new
-      # メモリ節約のため、Mechanizeの履歴機能をオフにする。
-      @mech.max_history = 1
-    end
 
-    @consec_count = 0
+    @result = {}
   end
 
   private
   
-  def mixin(targetObj, overWriteObj)
-    output = Marshal.load(Marshal.dump(targetObj))
-    if targetObj.instance_of?(Hash)
-      overWriteObj.each_key { |key|    
-        overWriteObj[key] = mixin(targetObj[key], overWriteObj[key])
-        output[key] = overWriteObj[key]
-      }
-    else
-      output = overWriteObj
-    end
-    return output
+  def notPublic
+    # マイリスト非公開のときに403になる。後で専用の処理を入れるべき。
+    puts "This movie/mylist is not public."
+    @result = "notPublic"
+    return { "order" => "terminate" }  
   end
-  
-  public 
-  
+
+  def limInCommunity
+    puts "This movie/mylist is limited in comunity members."
+    # ex. item_id -> 1294702905
+    @result = "limInCommunity"
+    return { "order" => "terminate" }   
+  end
+
+  def notFound
+    puts "This movie/mylist is not found."
+    @result = "notFound"
+    return { "order" => "terminate" }  
+  end
+
+  def deleted
+    puts "This movie/mylist is deleted."
+    @result = "deleted"
+    return { "order" => "terminate" }  
+  end
+
+  def deniedSeqReq
+    puts "Denied sequential requests."
+    sleep @waitConfig["deniedSeqReq"]
+    @result = "deniedSeqReq"
+    return { "order" => "retry" }  
+  end
+
+  def serverIsBusy
+    puts "The server is busy."
+    sleep @waitConfig["serverIsBusy"]
+    @result = "serverIsBusy"
+    return { "order" => "retry" } 
+  end
+
+  def serviceUnavailable
+    puts "Service unavailable."
+    sleep @waitConfig["serviceUnavailable"]
+    @result = "serviceUnavailable"
+    return { "order" => "retry" } 
+  end
+
+  def timedOut
+    puts "Request timed out."
+    sleep @waitConfig["timedOut"]
+    @result = "timedOut"
+    return { "order" => "retry" } 
+  end
+
+  def success(resBody)
+    sleep @waitConfig["each"]
+    @seqTime += 1
+    
+    if @seqTime >= @waitConfig["seqAccLimit"]
+      sleep @waitConfig["afterSeq"]
+      @seqTime = 0
+    end
+    return { "order" => "success", "body" => resBody } 
+  end
+
+  def wait(status)
+    puts "Wait for " + waitTime + " second."
+    sleep @waitConfig[status.to_s]
+  end
+    
+  public
+
   def setWait(waitConfig)
     if waitConfig != nil
       @waitConfig = mixin(@waitConfig, waitConfig)
     end
   end
+end
 
-  def eachWait
-     # ウェイト...1回目の場合は無視 -------------------------
-    if @consec_count != 0
-      # 動画毎
-      sleep @wait['each']
- 
-      # 一定のリクエスト回数毎
-      if @consec_count >= @wait['consec_count'] then
-        sleep @wait['consec_wait']
-        @consec_count = 0
+
+class XmlConnector < Connector
+  def get (host, entity)  
+    response = nil
+          
+    begin
+      puts "Request to " + host + entity 
+      Net::HTTP.start(host, 80) { |http|
+        response = http.get(entity)
+      }
+
+    rescue => e
+      puts e
+    rescue Timeout::Error => e  
+      timeOut      
+
+    else
+      res = case response
+      when Net::HTTPSuccess
+        reviewRes( response.body.force_encoding("UTF-8") )
+      #    return response.body.force_encoding("UTF-8") 
+      # when Net::HTTPRedirection
+      #  fetch(response['location'], limit - 1)
+      when Net::HTTPForbidden
+        forbidden            
+      when Net::HTTPNotFound
+        notFound
+      when Net::HTTPServiceUnavailable 
+        serviceUnavailable
+      else
+        unknownError
+      end    
+    end until res["order"] == "success" ||
+              res["order"] == "terminate"
+
+    res
+  end
+end
+
+class MylistAtomConnector < XmlConnector
+  private
+
+  def forbidden
+    # マイリストが非公開の場合、html/Atomのどちらへのリクエストであっても、403が返ってくる。
+    notPublic
+  end
+
+  def reviewRes(resBody)
+    if # アクセス集中時
+      /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~
+        resBody.force_encoding("UTF-8")
+    then
+      serverIsBusy
+    else
+      success(resBody)
+    end      
+  end
+end
+
+class SearchByTagAtomConnector < XmlConnector
+  private
+
+  def forbidden
+    # マイリストが非公開の場合、html/Atomのどちらへのリクエストであっても、403が返ってくる。
+    notPublic
+  end
+
+  def reviewRes(resBody)
+    if # アクセス集中時
+      /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~
+        resBody.force_encoding("UTF-8")
+    then
+      serverIsBusy
+    else
+      success(resBody)
+    end      
+  end
+end
+
+class GetThumbInfoConnector < XmlConnector
+  private
+
+  def reviewRes(resBody)
+    r = resBody.force_encoding("UTF-8")
+
+    if # getThumbInfoは、該当する動画がない・削除済み・コミュニティ限定でも200が返ってくる。
+      /<nicovideo_thumb_response\sstatus=\"fail\">/ =~ r
+      if /<code>NOT_FOUND<\/code>/ =~ r
+        notFound
+      elsif /<code>DELETED<\/code>/ =~ r
+        deleted
+      elsif /<code>COMMUNITY<\/code>/ =~ r
+        limInCommunity
+      else
+        serverIsBusy
       end
-    end
-    # ------------------------------------------------
+    else
+      success(resBody)
+    end      
   end
+end
 
-  def timeOut
-    sleep @wait['timeout']
-    @connection = false
-    @failed += 1
-    warn "Timeout"
+class HtmlConnector < Connector
+  def initialize(mode)
+    @mode = mode
+    # デフォルトのウェイト設定
+    @waitConfig = {
+      'consec_count'  => 10,  # 連続してリクエストする回数
+      'consec_wait'   => 10,  # 連続リクエスト後のウェイト
+      'each'          => 10,  # 連続リクエスト時の、1リクエスト毎のウェイト
+ 
+      '200-abnormal'  => 300, # アクセス拒絶時（「短時間での連続アクセスは・・・」）の場合の再試行までの時間
+      'unavailable'   => 10,
+      '403'           => 300, # "403"時の再試行までのウェイト
+      '404'           => 300, # "403"時の再試行までのウェイト
+      'increment'     => 1,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
+
+      'timeout'       => 10,  # タイムアウト時の、再試行までのウェイト
+      '500'           => 10,  # "500"時の再試行までのウェイト
+      '503'           => 10,  # "503"時の再試行までのウェイト
+ 
+      'retryLimit'    => 3    # 再試行回数の限度
+    }
+    
+    # 1つの検索結果画面に表示される動画の数。現時点では32個がデフォルトの模様。
+    @NumOfSearched = 32
+
+    @mech = Mechanize.new
+    # メモリ節約のため、Mechanizeの履歴機能を切る。
+    @mech.max_history = 1
+
+    @consec_count = 0
   end
+  
+  public 
 
   def errorStatus(ex)
     # 再試行回数が
@@ -176,93 +354,6 @@ class Connector
     )
     
     return @mech.page
-  end
-
-  def xmlGet (host, entity)
-    response = nil
-    xmlDoc = nil
-    retryCount = 0
-    terminate = false
-        
-    begin
-      puts "Requesting to " + host + entity 
-      Net::HTTP.start(host, 80) { |http|
-        response = http.get(entity)
-      }
-    rescue => e
-      puts e
-    rescue Timeout::Error => e  
-      puts e
-      puts "Timeout."
-      # マイリスト非公開のときに、403になる。後で専用の処理を入れるべき。
-      wait("timeout")
-      retryCount += 1
-      
-      if retryCount >= @waitConfig["retryLimit"]
-        terminate = true
-        return "failed"
-      end
-    else
-      case response
-      when Net::HTTPSuccess
-        unless abnormalRes(response.body)
-          terminate = true
-          return response.body.force_encoding("UTF-8") 
-        end
-        wait("200-abnormal")
-        retryCount += 1
-      when Net::HTTPRedirection 
-        fetch(response['location'], limit - 1)
-      when Net::HTTPForbidden
-        puts "Access forbidden."
-        # マイリスト非公開のときに、403になる。後で専用の処理を入れるべき。
-        wait("403")
-        retryCount += 1
-      when Net::HTTPNotFound
-        puts "Http not found."
-        wait("404")
-        retryCount += 1
-      when Net::HTTPServiceUnavailable  
-        puts "Access rejected or service unavailable."
-        wait("unavailable")
-        retryCount += 1
-      else
-        puts response.force_encoding("UTF-8") 
-        puts "Unknown error."
-        wait("other")
-        retryCount += 1
-      end
-      
-      if retryCount >= @waitConfig["retryLimit"]
-        terminate = true
-        return "failed"
-      end
-    end until terminate
-  end
-
-  def abnormalRes(resBody)
-    if
-      # mylistRss アクセス集中時
-       /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~ resBody.force_encoding("UTF-8") ||
-      # getThumbInfo失敗時
-       /<nicovideo_thumb_response\sstatus=\"fail\">/ =~ resBody
-    then
-      puts "!!!!"
-      true
-    end  
-  end
-  
-  def wait(status)
-    sleep @waitConfig[status.to_s]
-  end
-  
-  def get (host, entity)
-    case @mode
-    when "html"
-      mechGet(host + entity)
-    when "atom"
-      xmlGet(host, entity)
-    end
   end
 
   attr_reader :mech
