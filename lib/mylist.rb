@@ -5,9 +5,11 @@ require 'rubygems'
 require 'ruby-debug'
 require 'kconv'
 
+require 'namespace.rb'
 require 'parser.rb'
 require 'movie.rb'
 require 'connector.rb'
+
 
 class Nicos::Mylist
   def initialize (mylist_id)
@@ -18,6 +20,8 @@ class Nicos::Mylist
   
   # 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
   # 類似度の平均を返す。
+  #
+  # @return [Fixnum] 編集距離に基づく類似度。上限は1、下限はなし。
   def getSimilarity
     l = @movies.length - 1
     dlc = DamerauLevenshtein
@@ -55,7 +59,8 @@ class Nicos::Mylist
     return similarity
   end
 
-  def getInfo
+  # 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
+  def getInfoHtml
     con = Nicos::Connector::Html.new('mech')
     reqUrl = 'http://www.nicovideo.jp' +
       '/mylist/' + @mylist_id.to_s
@@ -139,8 +144,11 @@ class Nicos::Mylist
       @movies.push(movie)
     }    
   end
-  
-  def getInfoLt
+
+  # マイリストのAtomフィードから、マイリストとそれに含まれる動画の情報を取得する。
+  #
+  # @return [Fixnum] 編集距離に基づく類似度。上限は1、下限はなし。
+  def getInfo
     con = Nicos::Connector::MylistAtom.new()
     host = 'www.nicovideo.jp'
     puts @mylist_id
@@ -168,6 +176,7 @@ class Nicos::Mylist
     end  
   end  
 
+  # {Movie#set}　を参照。
   def set(paramObj)
     paramObj.each_key { |key|
       param = paramObj[key]
@@ -205,19 +214,104 @@ class Nicos::Mylist
     }   
   end
 
+  # このインスタンスがgetInfo等によって正常に情報を取得できている場合、trueとなる。
+  # 各種メソッドの実行には、これがtrueであることが要求される。
+  # 
+  # @return [Boolean]
   attr_accessor :available
-    
-  attr_accessor :mylist_id    
-	attr_accessor :user_id    
-	attr_accessor :title       
-	attr_accessor :description  
-	attr_accessor :public     
-	attr_accessor :default_sort   
-	attr_accessor :create_time  
+
+  # マイリストID
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
+  attr_accessor :mylist_id 
+
+  # ユーザID
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}   
+	attr_accessor :user_id 
+
+  # マイリストのタイトル
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}   
+	attr_accessor :title   
+
+  # マイリストの説明文
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}    
+	attr_accessor :description
+
+  # 公開設定
+  #
+  # 調査中
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
+	attr_accessor :public 
+
+  # ソート順の設定
+  #
+  # ソート順の設定
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}    
+	attr_accessor :default_sort 
+
+  # マイリスト作成日時
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
+	attr_accessor :create_time
+
+  # マイリストの更新日時
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
 	attr_accessor :update_time  
-	attr_accessor :icon_id    
-  attr_accessor :sort_order   
-  attr_accessor :author   
-  
-  attr_accessor :movies     
+
+  # アイコンの色？
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
+	attr_accessor :icon_id
+
+  # 現在のソート順
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  # {Nicos::Movie#getInfo Mylist::getHtmlInfo}    
+  attr_accessor :sort_order  
+
+  # 作成者の名前
+  #
+  # @return [Fixnum]
+  # <b>取得可能なメソッド</b> 
+  # {Nicos::Movie#getInfo Mylist::getInfo}  
+  attr_accessor :author
+
+  # マイリストが含む動画インスタンスの配列
+  #
+  # getInfo等のメソッドを利用した際に、そのマイリストが含む動画の
+  # インスタンスが配列として自動的に作られ、moviesに収められる。
+  # @return [Array<Movie>] 
+  attr_accessor :movies   
 end

@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 $:.unshift File.dirname(__FILE__) + "/../lib"
 
-require 'nicos.rb'
+require 'nicoscraper'
 
 describe Nicos::Movie, "After executiton of 'getInfo' method" do  
   before(:all) do
@@ -55,10 +55,10 @@ describe Nicos::Movie, "when access with non-existent video_id" do
   end    
 end
 
-describe Nicos::Mylist, "After executiton of 'getInfoLt' method" do  
+describe Nicos::Mylist, "After executiton of 'getInfo' method" do  
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
-    @mylist.getInfoLt
+    @mylist.getInfo
     puts @mylist
   end
 
@@ -88,13 +88,54 @@ describe Nicos::Mylist, "After executiton of 'getInfoLt' method" do
   end
 end
 
-describe "When execute 'SearchByTagLt.execute' method " +
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "and return a string except \"continue\" in this block" do  
+  before(:all) do
+    searcher = Nicos::Searcher::ByTag.new()
+    @count = 0
+
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old", nil) { |result|
+      @count += 1
+      "not continue"
+    }
+  end
+
+  it "should end only one access." do
+    @count.should == 1  
+  end
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "and return a string except \"continue\" in this block" do  
+  before(:all) do
+    searcher = Nicos::Searcher::ByTag.new()
+    @count = 0
+
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old", nil) { |result|
+      @count += 1
+      nil
+    }
+  end
+
+  it "should end only one access." do
+    @count.should == 1  
+  end
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
           "passing following argument" do  
   before(:all) do
-    searcher = Nicos::Searcher::ByTagLt.new()
+    searcher = Nicos::Searcher::ByTag.new()
+    count = 0
+
     searcher.execute("ゆっくり実況プレイpart1リンク", "post_old", nil) { |result|
       @result = result
+
+      count += 1
+      puts count
+      "continue" unless count >= 3
     }
+    puts "end"
   end
 
   it "should have Array of movie objects." do
@@ -107,13 +148,13 @@ describe "When execute 'SearchByTagLt.execute' method " +
   
     @result[0].video_id     .should_not be_nil
     @result[0].title        .should_not be_nil
-    @result[0].published    .should_not be_nil
-    @result[0].updated      .should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
     #@result[0].memo         .should_not be_nil
     @result[0].description  .should_not be_nil
     @result[0].thumbnail_url.should_not be_nil
-    @result[0].published    .should_not be_nil
-    @result[0].updated      .should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
     @result[0].length       .should_not be_nil
 
     @result[0].view_counter .should_not be_nil

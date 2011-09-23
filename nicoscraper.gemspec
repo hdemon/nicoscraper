@@ -15,8 +15,7 @@ Gem::Specification.new do |s|
   s.email = %q{zeitdiebe@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
-    "README.md",
-    "README.rdoc"
+    "README.md"
   ]
   s.files = [
     ".document",
@@ -24,15 +23,14 @@ Gem::Specification.new do |s|
     "Gemfile.lock",
     "LICENSE.txt",
     "README.md",
-    "README.rdoc",
     "Rakefile",
     "VERSION",
+    "index.html",
     "lib/connector.rb",
     "lib/converter.rb",
     "lib/movie.rb",
     "lib/mylist.rb",
-    "lib/nicos.rb",
-    "lib/nicoscraper.rb",
+    "lib/namespace.rb",
     "lib/parser.rb",
     "lib/searcher.rb",
     "nicoscraper.gemspec",

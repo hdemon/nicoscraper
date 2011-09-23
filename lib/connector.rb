@@ -5,6 +5,8 @@ require 'rubygems'
 require 'ruby-debug'
 require 'net/http'
 
+require 'namespace.rb'
+
 module Nicos::Connector
   class Connector
     def initialize
@@ -124,7 +126,6 @@ module Nicos::Connector
     end
   end
 
-
   class Xml < Connector
     def get (host, entity)  
       response = nil
@@ -226,6 +227,7 @@ module Nicos::Connector
     end
   end
 
+=begin
   class HtmlConnector < Connector
     def initialize(mode)
       @mode = mode
@@ -355,7 +357,8 @@ module Nicos::Connector
       
       return @mech.page
     end
-
+    
     attr_reader :mech
   end
+=end
 end

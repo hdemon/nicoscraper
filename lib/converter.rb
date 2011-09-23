@@ -1,8 +1,12 @@
-﻿require 'rubygems'
+﻿# -*- encoding: utf-8 -*-
+$:.unshift File.dirname(__FILE__) 
+
+require 'rubygems'
 require 'xml'
 require 'time'
+require 'namespace.rb'
 
-module Nicos::Converter
+module Nicos::Converter #:nodoc:
   def iso8601ToUnix(str)
     Time.strptime(str, "%Y-%m-%dT%H:%M:%S").to_i
   end
@@ -30,7 +34,7 @@ module Nicos::Converter
   module_function :commaRemover
 end
 
-module Nicos::Extractor
+module Nicos::Extractor #:nodoc:
   def mylistId(str)
     /(mylist\/)([0-9]{1,})/ =~ str
     $2.to_i
