@@ -30,17 +30,11 @@ Gem::Specification.new do |s|
     "lib/classes/converter.rb",
     "lib/classes/movie.rb",
     "lib/classes/mylist.rb",
+    "lib/classes/namespace.rb",
     "lib/classes/parser.rb",
     "lib/classes/searcher.rb",
     "lib/config/wait.rb",
-    "lib/connector.rb",
-    "lib/converter.rb",
-    "lib/movie.rb",
-    "lib/mylist.rb",
-    "lib/namespace.rb",
     "lib/nicos.rb",
-    "lib/parser.rb",
-    "lib/searcher.rb",
     "nicoscraper.gemspec",
     "test/movie_spec.rb"
   ]

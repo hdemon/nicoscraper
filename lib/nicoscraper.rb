@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-
 module Nicos
   VERSION = "0.2.4"
 
@@ -11,9 +10,19 @@ module Nicos
 
   #
   CONFIG_DIR = File.join(ROOT, 'config')
+  CLASSES = File.join(ROOT, 'classes')
 end
 
-# Load Config
-Dir.glob(File.join(Nicos::CONFIG_DIR, '*.rb')).each do |file|
-  require file
+# puts Nicos::ROOT
+# puts Nicos::CONFIG_DIR
+
+# Load files.
+[
+  Nicos::CONFIG_DIR, 
+  Nicos::CLASSES
+].each do |path|
+  Dir.glob(File.join(path, '*.rb')).each do |file|
+    require file
+    # puts file
+  end
 end

@@ -162,3 +162,27 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     @result[0].mylist_counter.should_not be_nil 
   end    
 end
+
+describe "When execute 'Nicos::Connector::setWait" do
+  before(:all) do
+    WAIT_CONFIG = {
+      'seqAccLimit' => 100,
+     
+      'deniedSeqReq'=> {   
+        'retryLimit'  => 30,  
+        'wait'        => 1200  
+      },
+      
+      'serverIsBusy'=> {   
+        'retryLimit'  => 10
+      }
+    }
+
+    Nicos::Connector::setWait(WAIT_CONFIG)
+  end
+
+  it "should end only one access." do
+    w = Nicos::Connector::waitConfig  
+    w.seqAccLimit.should == 100
+  end
+end

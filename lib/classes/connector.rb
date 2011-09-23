@@ -9,12 +9,19 @@ require 'namespace.rb'
 
 module Nicos
   module Connector
+    def setWait(waitConfig)
+      @waitConfig = mixinNonDestructive(
+        Nicos::Connector::WAIT_CONFIG_DEFAULT,
+        waitConfig
+      ) if waitConfig != nil
+    end
+    module_function: setWait
+
     class Connector
       def initialize
         # デフォルトのウェイト設定
         @seqTime = 0
         @result = {}
-          p Nicos::Connector::WAIT_CONFIG_DEFAULT
         #setWait(waitConfig)
       end
 
@@ -91,12 +98,6 @@ module Nicos
       end
         
       public
-
-      def setWait(waitConfig)
-        if waitConfig != nil
-          @waitConfig = mixin(Nicos::Connector::WAIT_CONFIG_DEFAULT, waitConfig)
-        end
-      end
     end
 
     class Xml < Connector
