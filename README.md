@@ -1,3 +1,7 @@
+
+[http://rubydoc.info/gems/nicoscraper/0.2.4/](こちら)のドキュメントを御覧下さい。
+以下は上記のドキュメントのREADMEの転載です。
+
 NicoScraper
 ====================
 
@@ -8,7 +12,6 @@ NicoScraper
 **License:**  MIT License  
 **Latest Version:**  0.2.2  
 **Release Date:**  Sep 23rd 2011  
- 
 
 何をするライブラリ？
 ------
