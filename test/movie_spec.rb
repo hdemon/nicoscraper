@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 $:.unshift File.dirname(__FILE__) + "/../lib"
 
-require 'nicos.rb'
+require 'nicoscraper'
 
 describe Nicos::Movie, "After executiton of 'getInfo' method" do  
   before(:all) do

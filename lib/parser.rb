@@ -4,9 +4,14 @@ $:.unshift File.dirname(__FILE__)
 require 'rubygems'
 require 'xml'
 require 'time'
+
+require 'namespace.rb'
 require 'converter.rb'
 
 module Nicos::Parser
+  # getThumbInfoが返すXMLを解析し、ハッシュオブジェクトにして返します。
+  #
+  # @return [HashObj]
   def getThumbInfo(xml)
     doc = XML::Reader.string(
       xml,
@@ -57,7 +62,10 @@ module Nicos::Parser
     doc.close        
     parsed
   end
-  
+
+  # タグ検索のAtomフィードが返すXMLを解析し、ハッシュオブジェクトにして返します。
+  #
+  # @return [HashObj]  
   def tagAtom(xml)
     doc = XML::Reader.string(
       xml,
@@ -116,7 +124,10 @@ module Nicos::Parser
     doc.close    
     parsed
   end
- 
+   
+  # マイリストのAtomフィードが返すXMLを解析し、ハッシュオブジェクトにして返します。
+  #
+  # @return [HashObj]  
   def mylistAtom(xml)    
     doc = XML::Reader.string(
       xml,
