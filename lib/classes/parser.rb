@@ -5,7 +5,6 @@ require 'rubygems'
 require 'xml'
 require 'time'
 
-require 'namespace.rb'
 require 'converter.rb'
 
 module Nicos

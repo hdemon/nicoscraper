@@ -94,7 +94,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     @count = 0
 
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old", nil) { |result|
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
       @count += 1
       "not continue"
     }
@@ -111,7 +111,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     @count = 0
 
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old", nil) { |result|
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
       @count += 1
       nil
     }
@@ -128,7 +128,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     count = 0
 
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old", nil) { |result|
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
       @result = result
 
       count += 1
@@ -165,7 +165,7 @@ end
 
 describe "When execute 'Nicos::Connector::setWait" do
   before(:all) do
-    WAIT_CONFIG = {
+    wait = {
       'seqAccLimit' => 100,
      
       'deniedSeqReq'=> {   
@@ -178,11 +178,12 @@ describe "When execute 'Nicos::Connector::setWait" do
       }
     }
 
-    Nicos::Connector::setWait(WAIT_CONFIG)
+    Nicos::Connector::Config::setWait(wait)
   end
 
   it "should end only one access." do
-    w = Nicos::Connector::waitConfig  
-    w.seqAccLimit.should == 100
+    c = Nicos::Connector::Connector.new()  
+    c.waitConfig    .should_not be_nil
+#    w.seqAccLimit.should == 100
   end
 end

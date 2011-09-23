@@ -6,7 +6,6 @@ require 'ruby-debug'
 require 'damerau-levenshtein'
 require 'kconv'
 
-require 'namespace.rb'
 require 'parser.rb'
 require 'mylist.rb'
 require 'connector.rb'
@@ -124,7 +123,6 @@ module Nicos
       con = Nicos::Connector::GetThumbInfo.new()
       host = 'ext.nicovideo.jp'
       entity = '/api/getthumbinfo/' + @video_id
-      con.setWait(nil)
       result = con.get(host, entity)
 
       if

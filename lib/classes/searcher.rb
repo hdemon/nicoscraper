@@ -8,7 +8,6 @@ require 'time'
 require 'mechanize'
 require 'kconv'
 
-require 'namespace.rb'
 require 'parser.rb'
 
 module Nicos
@@ -17,7 +16,7 @@ module Nicos
     class ByTagSuper
       private
 
-      def get(tag, sort, page, method, waitObj)
+      def get(tag, sort, page, method)
         paramAry = []
 
         case sort
@@ -55,11 +54,10 @@ module Nicos
         host = 'www.nicovideo.jp'
         entity = '/tag/' + param
 
-        @connector.setWait(waitObj)
         @connector.get(host, entity)
       end
 
-      def loop(tag, sort, method, waitObj, &block)
+      def loop(tag, sort, method, &block)
         termFlag    = false
         page        = 1
         movieObjAry = []
@@ -70,8 +68,7 @@ module Nicos
             tag,
             sort,
             page,
-            method,
-            waitObj
+            method
           )
 
           if response["order"] == "success"
@@ -138,8 +135,8 @@ module Nicos
       # @param [String] tag
       # @param [String] sortMethod
       # @param [HashObj] waitConfig
-      def execute(tag, sortMethod, waitConfig, &block)
-        loop(tag, sort, "mech", waitObj) { |result, page|
+      def execute(tag, sortMethod, &block)
+        loop(tag, sort, "mech") { |result, page|
           block.call(result, page)
         }
       end
@@ -235,8 +232,8 @@ module Nicos
       #      'wait'        => 10
       #    }
       #  }
-      def execute(tag, sortMethod, waitConfig, &block)
-        loop(tag, sortMethod, "atom", waitConfig) { |result, page|
+      def execute(tag, sortMethod, &block)
+        loop(tag, sortMethod, "atom") { |result, page|
           block.call(result, page)
         }
       end

@@ -5,23 +5,17 @@ require 'rubygems'
 require 'ruby-debug'
 require 'net/http'
 
-require 'namespace.rb'
-
 module Nicos
   module Connector
-    def setWait(waitConfig)
-      @waitConfig = mixinNonDestructive(
-        Nicos::Connector::WAIT_CONFIG_DEFAULT,
-        waitConfig
-      ) if waitConfig != nil
-    end
-    module_function: setWait
-
     class Connector
+      include Config
+
       def initialize
         # デフォルトのウェイト設定
         @seqTime = 0
         @result = {}
+        @waitConfig = @@waitConfig
+      p @waitConfig
         #setWait(waitConfig)
       end
 
@@ -55,38 +49,38 @@ module Nicos
 
       def deniedSeqReq
         puts "Denied sequential requests."
-        sleep @waitConfig["deniedSeqReq"]
+        sleep @@waitConfig["deniedSeqReq"]
         @result = "deniedSeqReq"
         return { "order" => "retry" }  
       end
 
       def serverIsBusy
         puts "The server is busy."
-        sleep @waitConfig["serverIsBusy"]
+        sleep @@waitConfig["serverIsBusy"]
         @result = "serverIsBusy"
         return { "order" => "retry" } 
       end
 
       def serviceUnavailable
         puts "Service unavailable."
-        sleep @waitConfig["serviceUnavailable"]
+        sleep @@waitConfig["serviceUnavailable"]
         @result = "serviceUnavailable"
         return { "order" => "retry" } 
       end
 
       def timedOut
         puts "Request timed out."
-        sleep @waitConfig["timedOut"]
+        sleep @@waitConfig["timedOut"]
         @result = "timedOut"
         return { "order" => "retry" } 
       end
 
       def success(resBody)
-        sleep @waitConfig["each"]
+        sleep @@waitConfig["each"]
         @seqTime += 1
         
-        if @seqTime >= @waitConfig["seqAccLimit"]
-          sleep @waitConfig["afterSeq"]
+        if @seqTime >= @@waitConfig["seqAccLimit"]
+          sleep @@waitConfig["afterSeq"]
           @seqTime = 0
         end
         return { "order" => "success", "body" => resBody } 
@@ -94,7 +88,7 @@ module Nicos
 
       def wait(status)
         puts "Wait for " + waitTime + " second."
-        sleep @waitConfig[status.to_s]
+        sleep @@waitConfig[status.to_s]
       end
         
       public
@@ -206,7 +200,7 @@ module Nicos
       def initialize(mode)
         @mode = mode
         # デフォルトのウェイト設定
-        @waitConfig = {
+        @@waitConfig = {
           'consec_count'  => 10,  # 連続してリクエストする回数
           'consec_wait'   => 10,  # 連続リクエスト後のウェイト
           'each'          => 10,  # 連続リクエスト時の、1リクエスト毎のウェイト

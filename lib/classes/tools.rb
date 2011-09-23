@@ -1,10 +1,11 @@
 require "ruby-debug"
 
-def mixinNonDestructive(targetObj, overWriteObj)
+# mixin non destructive
+def mixinND(targetObj, overWriteObj)
   output = Marshal.load(Marshal.dump(targetObj))
   if targetObj.instance_of?(Hash)
     overWriteObj.each_key { |key|    
-      overWriteObj[key] = mixin(targetObj[key], overWriteObj[key])
+      overWriteObj[key] = mixinND(targetObj[key], overWriteObj[key])
       output[key] = overWriteObj[key]
     }
   else

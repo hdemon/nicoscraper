@@ -5,7 +5,6 @@ require 'rubygems'
 require 'ruby-debug'
 require 'kconv'
 
-require 'namespace.rb'
 require 'parser.rb'
 require 'movie.rb'
 require 'connector.rb'
@@ -65,7 +64,6 @@ module Nicos
       con = Nicos::Connector::Html.new('mech')
       reqUrl = 'http://www.nicovideo.jp' +
         '/mylist/' + @mylist_id.to_s
-      con.setWait(nil)
       mechPage = con.mechGet(reqUrl)
       result = []
 
@@ -154,7 +152,6 @@ module Nicos
       host = 'www.nicovideo.jp'
       puts @mylist_id
       entity = '/mylist/' + @mylist_id.to_s + '?rss=atom&numbers=1'
-      con.setWait(nil)
       result = con.get(host, entity)
 
       if

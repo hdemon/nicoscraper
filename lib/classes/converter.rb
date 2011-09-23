@@ -4,7 +4,6 @@ $:.unshift File.dirname(__FILE__)
 require 'rubygems'
 require 'xml'
 require 'time'
-require 'namespace.rb'
 
 module Nicos
   module Converter
