@@ -26,11 +26,19 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "index.html",
+    "lib/classes/connector.rb",
+    "lib/classes/converter.rb",
+    "lib/classes/movie.rb",
+    "lib/classes/mylist.rb",
+    "lib/classes/parser.rb",
+    "lib/classes/searcher.rb",
+    "lib/config/wait.rb",
     "lib/connector.rb",
     "lib/converter.rb",
     "lib/movie.rb",
     "lib/mylist.rb",
     "lib/namespace.rb",
+    "lib/nicos.rb",
     "lib/parser.rb",
     "lib/searcher.rb",
     "nicoscraper.gemspec",
@@ -46,14 +54,16 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<damerau-levenshtein>, [">= 0"])
+      s.add_runtime_dependency(%q<damerau-levenshtein>, [">= 0.5.3"])
+      s.add_runtime_dependency(%q<libxml-ruby>, [">= 2.2.2"])
       s.add_development_dependency(%q<rake>, ["= 0.8.7"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
     else
-      s.add_dependency(%q<damerau-levenshtein>, [">= 0"])
+      s.add_dependency(%q<damerau-levenshtein>, [">= 0.5.3"])
+      s.add_dependency(%q<libxml-ruby>, [">= 2.2.2"])
       s.add_dependency(%q<rake>, ["= 0.8.7"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -61,7 +71,8 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rcov>, [">= 0"])
     end
   else
-    s.add_dependency(%q<damerau-levenshtein>, [">= 0"])
+    s.add_dependency(%q<damerau-levenshtein>, [">= 0.5.3"])
+    s.add_dependency(%q<libxml-ruby>, [">= 2.2.2"])
     s.add_dependency(%q<rake>, ["= 0.8.7"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
