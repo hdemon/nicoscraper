@@ -154,7 +154,7 @@ NicoScraper
 
 **その動画が属する、シリーズとみなせるマイリストのIDを返します。**
 {Nicos::Movie#isSeriesOf Nicos::Movie::isSeriesOf}
-　isBelongsToとgetSimiralityの組み合わせにより、ある動画の説明文中にマイリストの記載がある場合、そのマイリストがタイトルの類似性によるシリーズとみなせるならば、そのIDを返します。
+　isBelongsToとgetSimilarityの組み合わせにより、ある動画の説明文中にマイリストの記載がある場合、そのマイリストがタイトルの類似性によるシリーズとみなせるならば、そのIDを返します。
 
 
 注意点、および免責事項

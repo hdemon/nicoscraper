@@ -13,9 +13,37 @@ module Nicos
       def initialize
         # デフォルトのウェイト設定
         @seqTime = 0
+
+        @waitConfig = {
+          'seqAccLimit' => 10,  # 連続してリクエストする回数
+          'afterSeq'    => 10,  # 連続リクエスト後のウェイト
+          'each'        => 1,   # 連続リクエスト時の、1リクエスト毎のウェイト
+
+          'increment'   => 1,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
+          ''            => 100,
+
+          'deniedSeqReq'=> {
+            'retryLimit'  => 3,
+            'wait'        => 120
+          },
+          
+          'serverIsBusy'=> {
+            'retryLimit'  => 3,
+            'wait'        => 120
+          },
+          
+          'serviceUnavailable' => {
+            'retryLimit'  => 3,
+            'wait'        => 120
+          },
+          
+          'timedOut' => {
+            'retryLimit'  => 3,
+            'wait'        => 10
+          }
+        }
+
         @result = {}
-          p Nicos::Connector::WAIT_CONFIG_DEFAULT
-        #setWait(waitConfig)
       end
 
       private
@@ -94,7 +122,7 @@ module Nicos
 
       def setWait(waitConfig)
         if waitConfig != nil
-          @waitConfig = mixin(Nicos::Connector::WAIT_CONFIG_DEFAULT, waitConfig)
+          @waitConfig = mixin(@waitConfig, waitConfig)
         end
       end
     end

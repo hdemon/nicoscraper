@@ -2,7 +2,8 @@ source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
 #   gem "activesupport", ">= 2.3.5"
-gem "damerau-levenshtein", ">= 0"
+gem "damerau-levenshtein", ">= 0.5.3"
+gem "libxml-ruby", ">= 2.2.2"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
