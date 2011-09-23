@@ -32,7 +32,7 @@ class Nicos::Movie
   def isBelongsTo (mylistId, &block)
     isBelongs = false
     thisMl = Nicos::Mylist.new(mylistId)
-    thisMl.getInfoLt
+    thisMl.getInfo
     
     thisMl.movies.each { |movie|
       isBelongs = true if movie.video_id == @video_id
@@ -46,8 +46,7 @@ class Nicos::Movie
         mylistId.to_s
     end
 
-    block.call(thisMl) if block != nil
-    
+    block.call(thisMl) if block != nil    
     isBelongs
   end
   
@@ -131,7 +130,6 @@ class Nicos::Movie
     then
       parsed = Nicos::Parser::getThumbInfo(result["body"])
       set(parsed)
-      p self
       @available = true
     else
       @available = false
@@ -157,15 +155,17 @@ class Nicos::Movie
        
       # common  
       when "video_id"
-        @video_id = param
+        @video_id = param.to_s
       when "item_id"
         @item_id = param.to_i
+      when "title"
+        @title = param.to_s
       when "mylist_id"    
-        @mylist_id = param
+        @mylist_id = param.to_i
     	when "description"
-        @description = param   
+        @description = param.to_s   
       when "length"
-        @length = param   
+        @length = param.to_i   
       when "first_retrieve"
         @first_retrieve = param       
       
@@ -175,15 +175,15 @@ class Nicos::Movie
         param = paramObj['item_data'][key]
           case key
           when "video_id"
-            @video_id = param   
+            @video_id = param.to_s  
         	when "title"
-            @title = param
+            @title = param.to_s
         	when "thumbnail_url"
-            @thumbnail_url = param
+            @thumbnail_url = param.to_s
         	when "first_retrieve"
-            @first_retrieve = param
+            @first_retrieve = param.to_i
         	when "update_time"
-            @update_time = param
+            @update_time = param.to_i
         	when "view_counter"
             @view_counter = param.to_i
         	when "mylist_counter"
@@ -191,15 +191,15 @@ class Nicos::Movie
         	when "num_res"
             @comment_num = param.to_i
         	when "length_seconds"
-            @length = param
+            @length = param.to_i
         	when "deleted"
             @deleted = param.to_i       
         	when "last_res_body"
-            @last_res_body = param
+            @last_res_body = param.to_s
           end
         } 
     	when "watch"
-        @watch = param
+        @watch = param.to_i
     	when "create_time"
         @create_time = param.to_i
     	when "update_time"
@@ -207,17 +207,23 @@ class Nicos::Movie
       
       # MylistAPI-Atom
     	when "memo"
-        @memo = param        
+        @memo = param.to_s       
     	when "published"
         @create_time = param.to_i     
     	when "updated"
-        @update_time = param.to_i        
+        @update_time = param.to_i 
+      when "view"
+        @view_counter = param.to_i
+      when "mylist"
+        @mylist_counter = param.to_i
+      when "res"
+        @comment_num = param.to_i       
       
       # getThumbInfo  
     	when "thumbnail_url"
-        @thumbnail_url = param
+        @thumbnail_url = param.to_s
     	when "movie_type"
-        @movie_type = param
+        @movie_type = param.to_s
       when "size_high"
         @size_high = param.to_i
     	when "size_low"
@@ -229,11 +235,11 @@ class Nicos::Movie
     	when "comment_num"
         @comment_num = param.to_i
     	when "last_res_body"
-        @last_res_body = param
+        @last_res_body = param.to_s
     	when "watch_url"
-        @watch_url = param
+        @watch_url = param.to_s
     	when "thumb_type"
-        @thumb_type = param
+        @thumb_type = param.to_s
     	when "embeddable"
         @embeddable = param.to_i
     	when "no_live_play"

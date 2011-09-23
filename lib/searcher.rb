@@ -62,6 +62,7 @@ module Nicos::Searcher
       termFlag    = false
       page        = 1
       movieObjAry = []
+      order = "continue"
 
       begin
          response = get(
@@ -80,14 +81,11 @@ module Nicos::Searcher
             movie.set(each)
             movieObjAry.push(movie)
           }
-
-          termFlag = block.call(movieObjAry, page)
-        else
-          termFlag = true
         end
 
+        order = block.call(movieObjAry, page)
         page += 1
-      end until termFlag
+      end until order != "continue"
     end
   end
 
@@ -135,7 +133,7 @@ module Nicos::Searcher
     end
 
     public
-    
+
     # @param [String] tag
     # @param [String] sortMethod
     # @param [HashObj] waitConfig
@@ -237,7 +235,7 @@ module Nicos::Searcher
     #    }
     #  }
     def execute(tag, sortMethod, waitConfig, &block)
-      loop(tag, sort, "atom", waitObj) { |result, page|
+      loop(tag, sortMethod, "atom", waitConfig) { |result, page|
         block.call(result, page)
       }
     end

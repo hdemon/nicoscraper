@@ -59,7 +59,7 @@ module Nicos::Parser
       end
     end
 
-    doc.close        
+    doc.close 
     parsed
   end
 
@@ -225,7 +225,6 @@ module Nicos::Parser
     end
 
     doc.close 
-
     parsed
   end
     
