@@ -181,9 +181,32 @@ describe "When execute 'Nicos::Connector::setWait" do
     Nicos::Connector::Config::setWait(wait)
   end
 
-  it "should end only one access." do
+  it "should have following values." do
     c = Nicos::Connector::Connector.new()  
     c.waitConfig    .should_not be_nil
-#    w.seqAccLimit.should == 100
+    c.waitConfig["seqAccLimit"]
+                    .should == 100
+    c.waitConfig["afterSeq"]
+                    .should == 10
+    c.waitConfig["each"]
+                    .should == 1
+    c.waitConfig["increment"]
+                    .should == 1
+    c.waitConfig["deniedSeqReq"]["retryLimit"]
+                    .should == 30
+    c.waitConfig["deniedSeqReq"]["wait"]
+                    .should == 1200
+    c.waitConfig["serverIsBusy"]["retryLimit"]
+                    .should == 10
+    c.waitConfig["serverIsBusy"]["wait"]
+                    .should == 120
+    c.waitConfig["serviceUnavailable"]["retryLimit"]
+                    .should == 3
+    c.waitConfig["serviceUnavailable"]["wait"]
+                    .should == 120
+    c.waitConfig["timedOut"]["retryLimit"]
+                    .should == 3
+    c.waitConfig["timedOut"]["wait"]
+                    .should == 10
   end
 end

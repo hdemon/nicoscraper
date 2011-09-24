@@ -15,8 +15,6 @@ module Nicos
         @seqTime = 0
         @result = {}
         @waitConfig = @@waitConfig
-      p @waitConfig
-        #setWait(waitConfig)
       end
 
       private
