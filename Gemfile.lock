@@ -7,6 +7,7 @@ GEM
       bundler (~> 1.0)
       git (>= 1.2.5)
       rake
+    libxml-ruby (2.2.2)
     rake (0.8.7)
     rcov (0.9.10)
     shoulda (2.11.3)
@@ -16,8 +17,9 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.0.0)
-  damerau-levenshtein
+  damerau-levenshtein (>= 0.5.3)
   jeweler (~> 1.6.4)
+  libxml-ruby (>= 2.2.2)
   rake (= 0.8.7)
   rcov
   shoulda

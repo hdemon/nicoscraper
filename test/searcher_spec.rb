@@ -3,91 +3,6 @@ $:.unshift File.dirname(__FILE__) + "/../lib"
 
 require 'nicoscraper'
 
-describe Nicos::Movie, "After executiton of 'getInfo' method" do  
-  before(:all) do
-    @movie = Nicos::Movie.new("sm1097445")
-    @movie.getInfo
-  end
-
-  it "should have following values" do
-    @movie.available    .should be_true
-  
-    @movie.video_id     .should == "sm1097445"
-    @movie.title        .should == "【初音ミク】みくみくにしてあげる♪【してやんよ】"
-    @movie.description  .should_not be_nil
-    @movie.thumbnail_url.should_not be_nil
-    @movie.first_retrieve.should == 1190218922
-    @movie.length       .should == 99
-    @movie.movie_type   .should == "flv"
-    @movie.size_high    .should == 3906547
-    @movie.size_low     .should == 1688098
-
-    @movie.view_counter .should_not be_nil
-    @movie.comment_num  .should_not be_nil
-    @movie.mylist_counter .should_not be_nil 
-    @movie.last_res_body.should_not be_nil 
-
-    @movie.watch_url    .should == "http://www.nicovideo.jp/watch/sm1097445"
-    @movie.thumb_type   .should == "video"
-    @movie.embeddable   .should == 1
-    @movie.no_live_play .should == 0
-    @movie.tags_jp      .should_not be_nil
-    @movie.tags_tw      .should_not be_nil
-    @movie.user_id      .should == 70391
-  end    
-
-  it "should return true when execute 'isBelongsTo' method." +
-      "passing arguments (1450136)" do
-    result = @movie.isBelongsTo(1450136)
-    result .should_not be_nil
-    result .should be_true
-  end
-end
-
-describe Nicos::Movie, "when access with non-existent video_id" do
-  before(:all) do
-    @movie = Nicos::Movie.new("sm*nonexistent")
-    @movie.getInfo
-  end
-
-  it "should be unavailable" do
-    @movie.available    .should be_false
-  end    
-end
-
-describe Nicos::Mylist, "After executiton of 'getInfo' method" do  
-  before(:all) do
-    @mylist = Nicos::Mylist.new(15196568)
-    @mylist.getInfo
-    puts @mylist
-  end
-
-  it "should have following values" do
-    @mylist.available    .should be_true
-  
-    @mylist.mylist_id    .should == 15196568
-    @mylist.user_id      .should be_nil
-    @mylist.title        .should == "【Oblivion】おっさんの大冒険"
-    @mylist.description  .should_not be_nil
-    @mylist.public       .should be_nil
-    @mylist.default_sort .should be_nil
-    @mylist.create_time  .should be_nil
-    @mylist.update_time  .should_not be_nil
-
-    @mylist.icon_id      .should be_nil
-    @mylist.movies       .should_not be_nil
-    @mylist.movies       .should be_kind_of(Array)
-    @mylist.author       .should == "おぽこ"
-  end 
-
-  it "should return over 0.9 when execute 'getSimilarity' method." +
-      "passing arguments (1450136)" do
-    result = @mylist.getSimilarity
-    result .should_not be_nil
-    result .should >= 0.9
-  end
-end
-
 describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
           "and return a string except \"continue\" in this block" do  
   before(:all) do
@@ -207,6 +122,86 @@ describe "When execute 'Nicos::Connector::setWait" do
     c.waitConfig["timedOut"]["retryLimit"]
                     .should == 3
     c.waitConfig["timedOut"]["wait"]
+                    .should == 10
+  end
+
+  after(:all) do
+    Nicos::Connector::Config::setWait("default")
+  end  
+end
+
+describe "When execute 'Nicos::Connector::setWait" do
+  before(:all) do
+    wait = {
+      'seqAccLimit' => 100,
+     
+      'deniedSeqReq'=> {   
+        'retryLimit'  => 30,  
+        'wait'        => 1200  
+      },
+      
+      'serverIsBusy'=> {   
+        'retryLimit'  => 10
+      }
+    }
+
+    @c1 = Nicos::Searcher::ByTag.new()  
+    @c1.setWait(wait)
+
+    @c2 = Nicos::Searcher::ByTag.new()  
+  end
+
+  it "should have following values." do
+    @c1.waitConfig    .should_not be_nil
+    @c1.waitConfig["seqAccLimit"]
+                    .should == 100
+    @c1.waitConfig["afterSeq"]
+                    .should == 10
+    @c1.waitConfig["each"]
+                    .should == 1
+    @c1.waitConfig["increment"]
+                    .should == 1
+    @c1.waitConfig["deniedSeqReq"]["retryLimit"]
+                    .should == 30
+    @c1.waitConfig["deniedSeqReq"]["wait"]
+                    .should == 1200
+    @c1.waitConfig["serverIsBusy"]["retryLimit"]
+                    .should == 10
+    @c1.waitConfig["serverIsBusy"]["wait"]
+                    .should == 120
+    @c1.waitConfig["serviceUnavailable"]["retryLimit"]
+                    .should == 3
+    @c1.waitConfig["serviceUnavailable"]["wait"]
+                    .should == 120
+    @c1.waitConfig["timedOut"]["retryLimit"]
+                    .should == 3
+    @c1.waitConfig["timedOut"]["wait"]
+                    .should == 10
+
+    @c2.waitConfig    .should_not be_nil
+    @c2.waitConfig["seqAccLimit"]
+                    .should == 10
+    @c2.waitConfig["afterSeq"]
+                    .should == 10
+    @c2.waitConfig["each"]
+                    .should == 1
+    @c2.waitConfig["increment"]
+                    .should == 1
+    @c2.waitConfig["deniedSeqReq"]["retryLimit"]
+                    .should == 3
+    @c2.waitConfig["deniedSeqReq"]["wait"]
+                    .should == 120
+    @c2.waitConfig["serverIsBusy"]["retryLimit"]
+                    .should == 3
+    @c2.waitConfig["serverIsBusy"]["wait"]
+                    .should == 120
+    @c2.waitConfig["serviceUnavailable"]["retryLimit"]
+                    .should == 3
+    @c2.waitConfig["serviceUnavailable"]["wait"]
+                    .should == 120
+    @c2.waitConfig["timedOut"]["retryLimit"]
+                    .should == 3
+    @c2.waitConfig["timedOut"]["wait"]
                     .should == 10
   end
 end
