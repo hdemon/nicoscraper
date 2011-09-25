@@ -3,7 +3,6 @@ $:.unshift File.dirname(__FILE__)
 
 require 'rubygems'
 require 'ruby-debug'
-
 require 'time'
 require 'mechanize'
 require 'kconv'
@@ -12,8 +11,7 @@ require 'parser.rb'
 
 module Nicos
   module Searcher
-    # :nodocs:
-    class ByTagSuper
+    class ByTagSuper < Nicos::Connector::Config
       private
 
       def get(tag, sort, page, method)
@@ -85,6 +83,10 @@ module Nicos
           page += 1
         end until order != "continue"
       end
+
+      public
+
+      include Nicos::Connector::SetWait 
     end
 
     class ByTagHtml < ByTagSuper
@@ -101,7 +103,9 @@ module Nicos
         @resXP      = "//div[@class='uad_thumbfrm']/table/tr/td[2]/div/nobr[2]/strong"
         @mylistXP   = "//div[@class='uad_thumbfrm']/table/tr/td[2]/div/nobr[3]/a/strong"
         @adXP       = "//div[@class='uad_thumbfrm']/table/tr/td[2]/div/nobr[4]/a/strong"
+        @waitConfig = @@waitConfig
       end
+      attr_accessor :waitConfig
 
       private
 
@@ -147,7 +151,9 @@ module Nicos
         @numOfSearched = 32
         @incrAmt = 0.2
         @connector = Nicos::Connector::TagAtom.new()
+        @waitConfig = @@waitConfig
       end
+      attr_accessor :waitConfig
 
       private 
 

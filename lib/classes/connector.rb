@@ -7,15 +7,14 @@ require 'net/http'
 
 module Nicos
   module Connector
-    class Connector
-      include Config
-
+    class Connector < Config
       def initialize
         # デフォルトのウェイト設定
         @seqTime = 0
         @result = {}
         @waitConfig = @@waitConfig
       end
+      attr_accessor :waitConfig
 
       private
       
@@ -47,38 +46,38 @@ module Nicos
 
       def deniedSeqReq
         puts "Denied sequential requests."
-        sleep @@waitConfig["deniedSeqReq"]
+        sleep @waitConfig["deniedSeqReq"]
         @result = "deniedSeqReq"
         return { "order" => "retry" }  
       end
 
       def serverIsBusy
         puts "The server is busy."
-        sleep @@waitConfig["serverIsBusy"]
+        sleep @waitConfig["serverIsBusy"]
         @result = "serverIsBusy"
         return { "order" => "retry" } 
       end
 
       def serviceUnavailable
         puts "Service unavailable."
-        sleep @@waitConfig["serviceUnavailable"]
+        sleep @waitConfig["serviceUnavailable"]
         @result = "serviceUnavailable"
         return { "order" => "retry" } 
       end
 
       def timedOut
         puts "Request timed out."
-        sleep @@waitConfig["timedOut"]
+        sleep @waitConfig["timedOut"]
         @result = "timedOut"
         return { "order" => "retry" } 
       end
 
       def success(resBody)
-        sleep @@waitConfig["each"]
+        sleep @waitConfig["each"]
         @seqTime += 1
         
-        if @seqTime >= @@waitConfig["seqAccLimit"]
-          sleep @@waitConfig["afterSeq"]
+        if @seqTime >= @waitConfig["seqAccLimit"]
+          sleep @waitConfig["afterSeq"]
           @seqTime = 0
         end
         return { "order" => "success", "body" => resBody } 
@@ -86,7 +85,7 @@ module Nicos
 
       def wait(status)
         puts "Wait for " + waitTime + " second."
-        sleep @@waitConfig[status.to_s]
+        sleep @waitConfig[status.to_s]
       end
         
       public
@@ -99,7 +98,7 @@ module Nicos
         begin
           puts "Request to " + host + entity 
           Net::HTTP.start(host, 80) { |http|
-            response = http.get(entity)
+            response = http.get(entity, HEADER)
           }
 
         rescue => e

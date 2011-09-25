@@ -169,7 +169,7 @@ module Nicos
         when "first_retrieve"
           @first_retrieve = param       
         
-        # MylistAPI      
+        # MylistAPI 現在未実装    
         when "item_data"
           paramObj['item_data'].each_key { |key|
           param = paramObj['item_data'][key]
@@ -205,7 +205,7 @@ module Nicos
       	when "update_time"
           @update_time = param.to_i
         
-        # MylistAPI-Atom
+        # Mylist-Atom
       	when "memo"
           @memo = param.to_s       
       	when "published"
@@ -257,7 +257,9 @@ module Nicos
         end
       }   
     end  
-    
+
+    include Nicos::Connector::SetWait 
+
     # このインスタンスがgetInfo等によって正常に情報を取得できている場合、trueとなる。
     # 各種メソッドの実行には、これがtrueであることが要求される。
     # 

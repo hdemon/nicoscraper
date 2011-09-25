@@ -168,7 +168,6 @@ module Nicos
 
         @available = true
         set(parsed["mylist"])
-        p self
       else
         @available = false
       end  
@@ -211,6 +210,9 @@ module Nicos
         end
       }   
     end
+
+    include Nicos::Connector::SetWait 
+
 
     # このインスタンスがgetInfo等によって正常に情報を取得できている場合、trueとなる。
     # 各種メソッドの実行には、これがtrueであることが要求される。
