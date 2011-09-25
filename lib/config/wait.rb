@@ -1,7 +1,7 @@
 module Nicos
   module Connector
     class Config
-      WAIT_CONFIG_DEFAULT =
+      @@waitConfigDefault =
       @@waitConfig = {
         'seqAccLimit' => 10,  # 連続してリクエストする回数
         'afterSeq'    => 10,  # 連続リクエスト後のウェイト（以下全て単位は秒）
@@ -30,16 +30,24 @@ module Nicos
         }
       }
 
+      def Config.setWaitDefault(waitConfig)
+        @@waitConfigDefault = mixinND(
+          @@waitConfigDefault,
+          waitConfig
+        )      
+      end
+
       def Config.setWait(waitConfig)
         case waitConfig
         when "default"
-          @@waitConfig = WAIT_CONFIG_DEFAULT
-        when nil then return end
+          @@waitConfig = @@waitConfigDefault
+        when nil
         else
           @@waitConfig = mixinND(
             @@waitConfig,
             waitConfig
           )
+        end
       end
     end
 
