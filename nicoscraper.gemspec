@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Masami Yonehara}]
-  s.date = %q{2011-09-23}
+  s.date = %q{2011-09-25}
   s.description = %q{It scrape movies and mylists of Niconico douga.
   }
   s.email = %q{zeitdiebe@gmail.com}
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
     "index.html",
     "lib/classes/connector.rb",
     "lib/classes/converter.rb",
+    "lib/classes/header.rb",
     "lib/classes/movie.rb",
     "lib/classes/mylist.rb",
     "lib/classes/parser.rb",
@@ -36,7 +37,8 @@ Gem::Specification.new do |s|
     "lib/config/wait.rb",
     "lib/nicoscraper.rb",
     "nicoscraper.gemspec",
-    "test/movie_spec.rb"
+    "test/movie_spec.rb",
+    "test/searcher_spec.rb"
   ]
   s.homepage = %q{http://github.com/hdemon/nicoscraper}
   s.licenses = [%q{MIT}]
