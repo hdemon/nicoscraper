@@ -1,4 +1,4 @@
-以下は[rubydoc](http://rubydoc.info/gems/nicoscraper/0.2.5/frames)からの転載です。詳細はこちらを御覧下さい。
+以下は[rubydoc](http://rubydoc.info/gems/nicoscraper/0.2.6/frames)からの転載です。詳細はこちらを御覧下さい。
 
 
 NicoScraper
@@ -9,8 +9,8 @@ NicoScraper
 **Author:**  Masami Yonehara  
 **Copyright:**  2011  
 **License:**  MIT License  
-**Latest Version:**  0.2.5  
-**Release Date:**  Sep 24th 2011  
+**Latest Version:**  0.2.6  
+**Release Date:**  Sep 25th 2011  
  
 
 何をするライブラリ？
