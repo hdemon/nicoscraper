@@ -1,3 +1,6 @@
+以下は[rubydoc](http://rubydoc.info/gems/nicoscraper/0.2.5/frames)からの転載です。詳細はこちらを御覧下さい。
+
+
 NicoScraper
 ====================
 
