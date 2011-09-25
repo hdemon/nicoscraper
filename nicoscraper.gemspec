@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{nicoscraper}
-  s.version = "0.2.4"
+  s.version = "0.2.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Masami Yonehara}]
-  s.date = %q{2011-09-23}
+  s.date = %q{2011-09-25}
   s.description = %q{It scrape movies and mylists of Niconico douga.
   }
   s.email = %q{zeitdiebe@gmail.com}
@@ -26,13 +26,6 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "index.html",
-    "lib/connector.rb",
-    "lib/converter.rb",
-    "lib/movie.rb",
-    "lib/mylist.rb",
-    "lib/namespace.rb",
-    "lib/parser.rb",
-    "lib/searcher.rb",
     "nicoscraper.gemspec",
     "test/movie_spec.rb"
   ]
@@ -46,14 +39,16 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<damerau-levenshtein>, [">= 0"])
+      s.add_runtime_dependency(%q<damerau-levenshtein>, [">= 0.5.3"])
+      s.add_runtime_dependency(%q<libxml-ruby>, [">= 2.2.2"])
       s.add_development_dependency(%q<rake>, ["= 0.8.7"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
     else
-      s.add_dependency(%q<damerau-levenshtein>, [">= 0"])
+      s.add_dependency(%q<damerau-levenshtein>, [">= 0.5.3"])
+      s.add_dependency(%q<libxml-ruby>, [">= 2.2.2"])
       s.add_dependency(%q<rake>, ["= 0.8.7"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -61,7 +56,8 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rcov>, [">= 0"])
     end
   else
-    s.add_dependency(%q<damerau-levenshtein>, [">= 0"])
+    s.add_dependency(%q<damerau-levenshtein>, [">= 0.5.3"])
+    s.add_dependency(%q<libxml-ruby>, [">= 2.2.2"])
     s.add_dependency(%q<rake>, ["= 0.8.7"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
