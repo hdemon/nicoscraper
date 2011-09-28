@@ -1,4 +1,4 @@
-以下は[rubydoc](http://rubydoc.info/gems/nicoscraper/0.2.5/frames)からの転載です。詳細はこちらを御覧下さい。
+以下は[rubydoc](http://rubydoc.info/gems/nicoscraper/0.2.6/frames)からの転載です。詳細はそちらを御覧下さい。
 
 
 NicoScraper
@@ -9,8 +9,8 @@ NicoScraper
 **Author:**  Masami Yonehara  
 **Copyright:**  2011  
 **License:**  MIT License  
-**Latest Version:**  0.2.5  
-**Release Date:**  Sep 24th 2011  
+**Latest Version:**  0.2.7
+**Release Date:**  Sep 25th 2011  
  
 
 何をするライブラリ？
@@ -24,13 +24,15 @@ NicoScraper
 
     $ gem install nicoscraper
 
-　とした後、
+　として下さい。もしlibxml2が足りない、extconfにオプションを指定しろ等のエラーが出た場合には、libxmlが入っていないかパスが通っていません。
+
+    yum install -y libxml2 libxml2-devel
+
+　などとして、libxmlを入れ直してから再度gemを実行して下さい。成功すれば、
 
     require 'nicoscraper' 
 
-　で使い始めて下さい。内部的にlibxml-rubyを使っており、インストール時に最新版に更新される可能性があります。
-
-　なお、実行前に[注意点、および免責事項](#___________)をお読み下さい。
+　で使うことができます。なお、実行前に[注意点、および免責事項](#___________)をお読み下さい。
 
 
 基本的な使い方
@@ -81,8 +83,8 @@ NicoScraper
 
     require 'nicoscraper'
 
-    mylist = Nicos::Mylist::new("")
-    mylist.getInfoLt
+    mylist = Nicos::Mylist::new("15196568")
+    mylist.getInfo
 
     p mylist
 
@@ -113,30 +115,39 @@ NicoScraper
 　タグやマイリスト検索結果からの情報取得には、Searcherモジュールを使います。情報のソート方法の指定、取得する範囲の制限が可能です。
 
     require 'nicoscraper'
+    require 'date'
 
     t = Time.now
-    ytd = Date::new(t.year, t.month, t.day) - 1
-    yesterday = Time.local(ytd.year, ytd.month, ytd.day, 0, 0, 0).to_i
+    tda = Date::new(t.year, t.month, t.day) - 3
+    threeDaysAgo = Time.local(ytd.year, ytd.month, ytd.day, 0, 0, 0).to_i
 
-    searcher = Nicos::Searcher::ByTag.new()
+    searchByTag = Nicos::Searcher::ByTag.new()
+    searchByTag.execute(
+      'VOCALOID', 
+      'post_new'
+    ) { |result, page|
+      terminate = false
 
-    searcher.execute('ゆっくり実況プレイpart1リンク', 'post_new', nil) {
-      |result, page|
-
-      result.each { |movieObj|
-        puts movieObj.title +
-          " is posted at " +
-           Time.at(movieObj.first_retrieve).to_s
-
-        "continue" if movieObj.first_retrieve >= yesterday 
-      }  
+      result.each { |movie|
+        terminate = ( movie.first_retrieve <= threeDaysAgo )
+        
+        puts movie.title +
+            " is posted at " +
+             Time.at(movie.first_retrieve).to_s 
+      }   
+      
+      if terminate
+        puts "loop terminated."
+      else
+        "continue" 
+      end
     }
 
-　この例では、`ゆっくり実況プレイpart1リンク`というタグの付く動画を、`post_new`=投稿日時が新しい順からさかのぼって取得し、取得した動画の日付が前日の0時0分を超えるまでそれを続けます。 
+　この例では、`VOCALOID`というタグの付く動画を、`post_new`=投稿日時が新しい順からさかのぼって取得し、取得した動画の日付が3日前の0時0分を超えるまでそれを続けます。 
 
 　ブロック内の第1引数には取得結果に基づく動画インスタンスが与えられるのですが、これは32個分の配列です。なぜ32個のセットなのかと言うと、ご存知のようにニコニコ動画の検索画面はページで区切られており、Searcherモジュールの各メソッドはページ毎に情報を取得し、ページ単位でブロックをコールするからです。HTMLから取得するにしろAtomフィードから取得するにしろ、1ページに32個の動画情報が含まれています。そして、第2引数には現在のページ数が与えられます。
 
-　そして、**ブロック内で`continue`の文字列を返すことによりスクレイプが継続します。**つまり、`continue`文字列を返し続けるロジックを組み込まないと、1ページ目を読んだ時点で処理が終了します。これは意図せざる過剰アクセスを防ぐための措置です。
+　そして、**ブロック内で`"continue"`の文字列を返すことによりスクレイプが継続します。**つまり、`"continue"`文字列を返し続けるロジックを組み込まないと、1ページ目を読んだ時点で処理が終了します。これは意図せざる過剰アクセスを防ぐための措置です。
 
 　上の例では、取得した動画の日付を調べ、3日前の0時0分より前の動画に到達すればそこでループを終える設計です。ループを継続するために取得情報を使うかどうかは任意なので、例えば10分間の制限で取得出来るだけ取得するということも可能でしょう。
 
@@ -174,7 +185,7 @@ NicoScraper
 
 　Searcherメソッドは継続的なアクセスを行い、またそれ以外のメソッドも実際の運用目的上ある程度の連続使用が前提になると思います。このライブラリは並列的なリクエストを行いませんが、それでも過剰なアクセスに伴うサーバからの拒絶や、あるいはそれ以上に、アカウントの停止もしくは法的責任を追求されるなどの事があり得ないという保証はできません。
 
-　それを防ぐための措置の一つが、`continue`を明示的に返さないとスクレイピングが継続しない仕様ですが、もう一つ、アクセス中のウェイトを任意に設定できるようにしています。具体的には、連続リクエストの上限回数、連続リクエスト後のウェイト、1リクエスト毎のウェイト、連続アクセス拒絶時やサーバ混雑時の再試行までのウェイトなどです。ウェイトの設定は、以下のように`Nicos::Connector::Config::waitConfig`に与えられています。以下はデフォルトの設定です。
+　それを防ぐための措置の一つが、`"continue"`を明示的に返さないとスクレイピングが継続しない仕様ですが、もう一つ、アクセス中のウェイトを任意に設定できるようにしています。具体的には、連続リクエストの上限回数、連続リクエスト後のウェイト、1リクエスト毎のウェイト、連続アクセス拒絶時やサーバ混雑時の再試行までのウェイトなどです。ウェイトの設定は、以下のように`Nicos::Connector::Config::waitConfig`に与えられています。以下はデフォルトの設定です。
 
     Nicos::Connector::Config::waitConfig = {
 
@@ -208,7 +219,7 @@ NicoScraper
     }
 
 ###連続リクエストとは？
-　
+
 　Searcherメソッドはある一定回数のHTTPリクエストを1つの単位とし、その単位のリクエストが終わるごとに休憩を入れます。この1単位を連続リクエストと言います。上の例では、10のリクエストを1単位とし(`seqAccLimit`)、その連続リクエストが終わった後に10秒の休憩を入れる(`afterSeq`)設定になっています。
 
 　なお、連続リクエスト毎に限らず、1リクエスト毎のウェイトも併せて設定できます。上の例では、1リクエスト毎に1秒のウェイトを入れる設定です(`each`)。
@@ -298,6 +309,12 @@ Mylistクラスのインスタンス
 
 ###更新履歴
 
+**v 0.2.7**
+
++ ドキュメントのSearcherモジュールの例の誤り、その他細かい点を訂正。
+
++ MylistのAtomフィードから、投稿日の取得が漏れていた点を修正。
+
 **v 0.2.6** 
 
 + ドキュメントが正しく生成されていなかったので訂正。
@@ -306,11 +323,11 @@ Mylistクラスのインスタンス
 
 + ヘッダの追加
 
-+ コードと設定の分離
++ コードと設定の分離。
 
 **v 0.2.4**
 
-+ ドキュメント作成
++ ドキュメントの作成。
 
 + Searcherループのバグ修正。 
 
@@ -323,7 +340,7 @@ Mylistクラスのインスタンス
 
 + HTMLから取得・解析するメソッドの追加。
 
-+ キーワード検索の実装
++ キーワード検索の実装。
 
 **v 0.4-**
 
@@ -339,4 +356,4 @@ Mylistクラスのインスタンス
 
 + http://twitter.com/h_demon
 
-GitHubを経由して下さってもいいのですが、まだ慣れていないので対応が送れるかもしれません。
+GitHubを経由して下さってもいいのですが、まだ慣れていないので対応が遅れるかもしれません。

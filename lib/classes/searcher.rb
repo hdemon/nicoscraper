@@ -11,6 +11,7 @@ require 'parser.rb'
 
 module Nicos
   module Searcher
+    # @private
     class ByTagSuper < Nicos::Connector::Config
       private
 
@@ -163,10 +164,47 @@ module Nicos
 
       public
 
-      # 実行
+      # タグ検索を実行し、ブロックに結果を渡します。
       #
       # @param [String] tag 検索したいタグ文字列
       # @param [String] sortMethod ソート方法
+      #==基本的な使い方
+      # require 'nicoscraper'
+      # 
+      # searcher = Nicos::Searcher::ByTag.new()
+      # searcher.execute('VOCALOID', 'view_many') {
+      #  |result, page|
+      # 
+      #  result.each { |movieObj|
+      #    puts movieObj.title 
+      #  }  
+      # }
+      #
+      # result ----
+      #
+      # 【初音ミク】みくみくにしてあげる♪【してやんよ】
+      # 初音ミク　が　オリジナル曲を歌ってくれたよ「メルト」
+      # 初音ミク　が　オリジナル曲を歌ってくれたよ「ワールドイズマイン」
+      # 初音ミクオリジナル曲　「初音ミクの消失（LONG VERSION）」
+      # 【巡音ルカ】ダブルラリアット【オリジナル】
+      # 「卑怯戦隊うろたんだー」をKAITO,MEIKO,初音ミクにry【オリジナル】修正版
+      # 【オリジナル曲PV】マトリョシカ【初音ミク・GUMI】
+      # 初音ミクがオリジナルを歌ってくれたよ「ブラック★ロックシューター」
+      # ...
+      #
+      #　Nicos::Searcher::ByTagのインスタンスを作り、executeメソッドに引数を与えて実行します。
+      # 結果がブロックの第1仮引数に渡されます。
+      # 渡される結果はMovieクラスのインスタンスを含む配列です。
+      #
+      #==スクレイプの継続について
+      #
+      # ニコニコ動画の検索結果は、指定した数を一度に取得できる訳ではありません。
+      # なぜなら、現状では検索結果はHTML1ページ、もしくは1つのRSS/Atomフィードに32個を限度に渡される方式であり、
+      # ByTagクラスがその結果を利用する以上、32個=1単位という制約のもとに置かれるからです。
+      # 従って、例えば最新の投稿100個の情報が欲しいとしても、1回のリクエストでは手に入らず 
+      # かならず数回に分けてリクエストすることになります。
+      #
+      #　加えて、リクエストを継続するかどうかの判定も1ページ/1フィード毎に行います。
       #==sortMethod: ソート方法
       # *comment_new*  
       # コメントが新しい順

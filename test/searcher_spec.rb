@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
-$:.unshift File.dirname(__FILE__) + "/../lib"
+# $:.unshift File.dirname(__FILE__) + "/../lib"
 
-require 'nicoscraper'
+require '../lib/nicoscraper.rb'
 
 describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
           "and return a string except \"continue\" in this block" do  

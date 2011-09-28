@@ -111,7 +111,11 @@ module Nicos
               lengthStr = doc.value.split(/\:/)
               length   = lengthStr[0].to_i * 60 + lengthStr[1].to_i
               parsed[n]["length"] =  length
-            when "nico-numbers-view", "nico-numbers-res",
+            when "nico-info-date"
+              label = doc.name
+              doc.read
+              parsed[n]["first_retrieve"] =  Nicos::Converter.japToUnix(doc.value)
+           when "nico-numbers-view", "nico-numbers-res",
                   "nico-numbers-mylist"
               label = doc.value
               doc.read
