@@ -2,7 +2,6 @@
 $:.unshift File.dirname(__FILE__) 
 
 require 'rubygems'
-require 'ruby-debug'
 require 'damerau-levenshtein'
 require 'kconv'
 

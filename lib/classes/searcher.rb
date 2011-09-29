@@ -2,7 +2,6 @@
 $:.unshift File.dirname(__FILE__)
 
 require 'rubygems'
-require 'ruby-debug'
 require 'time'
 require 'mechanize'
 require 'kconv'
@@ -67,7 +66,6 @@ module Nicos
             sort,
             method
           )
-          debugger
 
           if response["order"] == "afterTheSuccess"
             result = parse(response["body"])
@@ -82,7 +80,7 @@ module Nicos
             break
           end
 
-          status = {:page => @page, :results => @connector.result}
+          status = {"page" => @page, "results" => @connector.result}
           order = block.call(movieObjAry, status)
           @page += 1
         end until order != "continue"

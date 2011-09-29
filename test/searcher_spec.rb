@@ -3,120 +3,6 @@
 
 require '../lib/nicoscraper.rb'
 
-describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
-          "and return a string except \"continue\" in this block" do  
-  before(:all) do
-    searcher = Nicos::Searcher::ByTag.new()
-    @count = 0
-
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
-      @count += 1
-      "not continue"
-    }
-  end
-
-  it "should end only one access." do
-    @count.should == 1  
-  end
-end
-
-describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
-          "and return a string except \"continue\" in this block" do  
-  before(:all) do
-    searcher = Nicos::Searcher::ByTag.new()
-    @count = 0
-
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
-      @count += 1
-      nil
-    }
-  end
-
-  it "should end only one access." do
-    @count.should == 1  
-  end
-end
-
-describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
-          "passing following argument" do  
-  before(:all) do
-    searcher = Nicos::Searcher::ByTag.new()
-    count = 0
-
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
-      @result = result
-
-      count += 1
-      "continue" unless count >= 3
-    }
-    puts "end"
-  end
-
-  it "should have Array of movie objects." do
-    @result   .should be_kind_of(Array)
-    @result[0].should be_instance_of(Nicos::Movie)
-  end
-
-  it "should contains movie objects that have following structure." do
-    @result[0].available    .should be_true
-  
-    @result[0].video_id     .should_not be_nil
-    @result[0].title        .should_not be_nil
-    @result[0].create_time  .should_not be_nil
-    @result[0].update_time  .should_not be_nil
-    #@result[0].memo         .should_not be_nil
-    @result[0].description  .should_not be_nil
-    @result[0].thumbnail_url.should_not be_nil
-    @result[0].create_time  .should_not be_nil
-    @result[0].update_time  .should_not be_nil
-    @result[0].length       .should_not be_nil
-
-    @result[0].view_counter .should_not be_nil
-    @result[0].comment_num  .should_not be_nil
-    @result[0].mylist_counter.should_not be_nil 
-  end    
-end
-
-describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
-          "and searcher reaches the last page." do  
-  before(:all) do
-    searcher = Nicos::Searcher::ByTag.new()
-    count = 0
-
-    searcher.execute("アヤックス", "post_old") { |result, status|
-      @result = result
-
-      count += 1
-      puts count
-      "continue"
-    }
-    puts "end"
-  end
-
-  it "should have Array of movie objects." do
-    @result   .should be_kind_of(Array)
-    @result[0].should be_instance_of(Nicos::Movie)
-  end
-
-  it "should contains movie objects that have following structure." do
-    @result[0].available    .should be_true
-  
-    @result[0].video_id     .should_not be_nil
-    @result[0].title        .should_not be_nil
-    @result[0].create_time  .should_not be_nil
-    @result[0].update_time  .should_not be_nil
-    #@result[0].memo         .should_not be_nil
-    @result[0].description  .should_not be_nil
-    @result[0].thumbnail_url.should_not be_nil
-    @result[0].create_time  .should_not be_nil
-    @result[0].update_time  .should_not be_nil
-    @result[0].length       .should_not be_nil
-
-    @result[0].view_counter .should_not be_nil
-    @result[0].comment_num  .should_not be_nil
-    @result[0].mylist_counter.should_not be_nil 
-  end    
-end
 
 describe "When execute 'Nicos::Connector::setWait" do
   before(:all) do
@@ -244,4 +130,156 @@ describe "When execute 'Nicos::Connector::setWait" do
     @c2.waitConfig["timedOut"]["wait"]
                     .should == 10
   end
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "and return a string except \"continue\" in this block" do  
+  before(:all) do
+    wait = {
+      'seqAccLimit' => 0,  # 連続してリクエストする回数
+      'afterSeq'    => 0,  # 連続リクエスト後のウェイト（以下全て単位は秒）
+      'each'        => 0,   # 連続リクエスト時の、1リクエスト毎のウェイト
+
+      'increment'   => 0,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
+
+      'deniedSeqReq'=> {    # 連続アクセス拒絶時
+        'retryLimit'  => 3,   # 再試行回数の上限
+        'wait'        => 120  # 再試行までのウェイト
+      },
+      
+      'serverIsBusy'=> {    # サーバ混雑時
+        'retryLimit'  => 3,
+        'wait'        => 120
+      },
+      
+      'serviceUnavailable' => { # 503時
+        'retryLimit'  => 3,
+        'wait'        => 120
+      },
+      
+      'timedOut' => {       # タイムアウト時
+        'retryLimit'  => 3,
+        'wait'        => 10
+      }
+    }
+    Nicos::Connector::Config::setWait(wait)
+
+    searcher = Nicos::Searcher::ByTag.new()
+    @count = 0
+
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
+      @count += 1
+      "not continue"
+    }
+  end
+
+  it "should end only one access." do
+    @count.should == 1  
+  end
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "and return a string except \"continue\" in this block" do  
+  before(:all) do
+    searcher = Nicos::Searcher::ByTag.new()
+    @count = 0
+
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
+      @count += 1
+      nil
+    }
+  end
+
+  it "should end only one access." do
+    @count.should == 1  
+  end
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "passing following argument" do  
+  before(:all) do
+    searcher = Nicos::Searcher::ByTag.new()
+    count = 0
+
+    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result, status|
+      @result = result
+      @status = status
+p @status
+      count += 1
+      "continue" unless count >= 3
+    }
+    puts "end"
+  end
+
+  it "should have Array of movie objects." do
+    @result   .should be_kind_of(Array)
+    @result[0].should be_instance_of(Nicos::Movie)
+  end
+
+  it "should contains movie objects that have following structure." do
+    @result[0].available    .should be_true
+  
+    @result[0].video_id     .should_not be_nil
+    @result[0].title        .should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
+    #@result[0].memo         .should_not be_nil
+    @result[0].description  .should_not be_nil
+    @result[0].thumbnail_url.should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
+    @result[0].length       .should_not be_nil
+
+    @result[0].view_counter .should_not be_nil
+    @result[0].comment_num  .should_not be_nil
+    @result[0].mylist_counter.should_not be_nil 
+  end   
+
+  it "should contains movie objects that have following structure." do
+    @status["results"]["notPublic"]    .should be_instance_of(Array)
+    @status["results"]["limInCommunity"].should be_instance_of(Array)
+    @status["results"]["notFound"]     .should be_instance_of(Array)
+    @status["results"]["deleted"]      .should be_instance_of(Array)
+    @status["results"]["succeededNum"] .should >= 0
+  end    
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "and searcher reaches the last page." do  
+  before(:all) do
+    searcher = Nicos::Searcher::ByTag.new()
+    count = 0
+
+    searcher.execute("アヤックス", "post_old") { |result, status|
+      @result = result
+
+      count += 1
+      puts count
+      "continue"
+    }
+  end
+
+  it "should have Array of movie objects." do
+    @result   .should be_kind_of(Array)
+    @result[0].should be_instance_of(Nicos::Movie)
+  end
+
+  it "should contains movie objects that have following structure." do
+    @result[0].available    .should be_true
+  
+    @result[0].video_id     .should_not be_nil
+    @result[0].title        .should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
+    #@result[0].memo         .should_not be_nil
+    @result[0].description  .should_not be_nil
+    @result[0].thumbnail_url.should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
+    @result[0].length       .should_not be_nil
+
+    @result[0].view_counter .should_not be_nil
+    @result[0].comment_num  .should_not be_nil
+    @result[0].mylist_counter.should_not be_nil 
+  end    
 end

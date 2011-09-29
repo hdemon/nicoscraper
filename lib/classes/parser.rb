@@ -227,8 +227,7 @@ module Nicos
           end  
         end
       end
-      p html
-debugger 
+      
       doc.close 
       parsed
     end

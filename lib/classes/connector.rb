@@ -2,7 +2,6 @@
 $:.unshift File.dirname(__FILE__) 
 
 require 'rubygems'
-require 'ruby-debug'
 require 'net/http'
 
 module Nicos
@@ -137,34 +136,13 @@ module Nicos
           else
             unknownError
           end    
-        end until res["order"] == "afterTheSuccess" ||
-                  res["order"] == "skip"
+        end until res["order"] != "retry"
 
         res
       end
     end
 
     class MylistAtom < Xml
-      private
-
-      def forbidden
-        # マイリストが非公開の場合、html/Atomのどちらへのリクエストであっても、403が返ってくる。
-        notPublic
-      end
-
-      def reviewRes(resBody)
-        if # アクセス集中時
-          /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~
-            resBody.force_encoding("UTF-8")
-        then
-          serverIsBusy
-        else
-          succeeded(resBody)
-        end      
-      end
-    end
-
-    class TagAtom < Xml
       private
 
       def forbidden
@@ -184,6 +162,9 @@ module Nicos
           reachedLast
         end      
       end
+    end
+
+    class TagAtom < MylistAtom 
     end
 
     class GetThumbInfo < Xml
