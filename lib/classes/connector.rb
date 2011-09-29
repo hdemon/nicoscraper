@@ -11,10 +11,17 @@ module Nicos
         # デフォルトのウェイト設定
         @seqTime = 0
         @result = {
+          "allDisabled" => [],
           "notPublic" => [],
           "limInCommunity" => [],
           "notFound" => [],
           "deleted" => [],
+
+          "deniedSeqReq" => 0,
+          "serverIsBusy" => 0,
+          "serviceUnavailable" => 0,
+          "timedOut" => 0,
+
           "succeededNum" => 0
         }
         @waitConfig = @@waitConfig
@@ -23,64 +30,79 @@ module Nicos
       attr_accessor :result
 
       private
+
+      # 再試行しない例外の共通処理
+      def accessDisabled(exception)
+        @result[exception].push(@nowAccess)
+        { "order" => "skip", "status" => exception }  
+      end
+       
+      def allDisabled
+        # MylistAtomについて、全ての動画が非公開あるいはその他の理由でRSSフィードに掲載されない時。
+        puts "All movies are disabled."
+        accessDisabled("allDisabled") 
+      end
       
       def notPublic
         # マイリスト非公開のときに403になる。後で専用の処理を入れるべき。
         puts "This movie/mylist is not public."
-        @result["notPublic"].push(@nowAccess)
-        return { "order" => "skip" }  
+        accessDisabled("notPublic") 
       end
 
       def limInCommunity
         puts "This movie/mylist is limited in comunity members."
         # ex. item_id -> 1294702905
-        @result["limInCommunity"].push(@nowAccess)
-        return { "order" => "skip" }   
+        accessDisabled("limInCommunity") 
       end
 
       def notFound
         puts "This movie/mylist is not found."
-        @result["notFound"].push(@nowAccess)
-        return { "order" => "skip" }  
+        accessDisabled("notFound") 
       end
 
-      def deleted
+      def deleted # マイリストは削除と404の区別がない？
         puts "This movie/mylist is deleted."
-        @result["deleted"].push(@nowAccess)
-        return { "order" => "skip" }  
+        accessDisabled("deleted") 
       end
 
-      def deniedSeqReq
+      # 以下、再試行の可能性のある例外
+
+      # 共通処理
+      def exception(exception, retryCount)
+        if retryCount <= @waitConfig[exception]["retryLimit"]
+          { "order" => "skip" }   
+        else
+          sleep @waitConfig[exception]["wait"]
+          @result[exception] += 1
+          { "order" => "retry" }   
+        end        
+      end
+
+      def deniedSeqReq(retryCount)
         puts "Denied sequential requests."
-        sleep @waitConfig["deniedSeqReq"]
-        @result = "deniedSeqReq"
-        return { "order" => "retry" }  
+        exception("deniedSeqReq", retryCount)
       end
 
-      def serverIsBusy
+      def serverIsBusy(retryCount)
         puts "The server is busy."
-        sleep @waitConfig["serverIsBusy"]
-        @result = "serverIsBusy"
-        return { "order" => "retry" } 
+        exception("serverIsBusy", retryCount)
       end
 
-      def serviceUnavailable
+      def serviceUnavailable(retryCount)
         puts "Service unavailable."
-        sleep @waitConfig["serviceUnavailable"]
-        @result = "serviceUnavailable"
-        return { "order" => "retry" } 
+        exception("serviceUnavailable", retryCount)
       end
 
-      def timedOut
+      def timedOut(retryCount)
         puts "Request timed out."
-        sleep @waitConfig["timedOut"]
-        @result = "timedOut"
-        return { "order" => "retry" } 
+        exception("timedOut", retryCount)
       end
 
-      def reachedLast
+
+
+      def reachedLast 
+        # TagAtom専用。MylistAtomは、allDisabledと結果が被ってしまう。
         puts "Reached the last page."
-        @result = "reachedLast"
         return { "order" => "terminate" } 
       end
 
@@ -107,13 +129,15 @@ module Nicos
     class Xml < Connector
       def get (host, entity)  
         response = nil
+        retryCount = 0
               
         begin
-          puts "Request to " + host + entity 
+          @nowAccess = host + entity
+          puts "Request to " + @nowAccess
           Net::HTTP.start(host, 80) { |http|
             response = http.get(entity, HEADER)
           }
-          @nowAccess = host + entity
+          retryCount += 1
 
         rescue => e
           puts e
@@ -128,7 +152,7 @@ module Nicos
           # when Net::HTTPRedirection
           #  fetch(response['location'], limit - 1)
           when Net::HTTPForbidden
-            forbidden            
+            forbidden         
           when Net::HTTPNotFound
             notFound
           when Net::HTTPServiceUnavailable 
@@ -142,7 +166,7 @@ module Nicos
       end
     end
 
-    class MylistAtom < Xml
+    class TagAtom < Xml
       private
 
       def forbidden
@@ -164,7 +188,19 @@ module Nicos
       end
     end
 
-    class TagAtom < MylistAtom 
+    class MylistAtom < TagAtom 
+      def reviewRes(resBody)
+        resBody = resBody.force_encoding("UTF-8")
+        if # アクセス集中時
+          /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~         
+          resBody then
+          serverIsBusy
+        elsif /\<entry\>/ =~ resBody && /\<\/entry\>/ =~ resBody
+          succeeded(resBody)          
+        else
+          allDisabled
+        end      
+      end
     end
 
     class GetThumbInfo < Xml
