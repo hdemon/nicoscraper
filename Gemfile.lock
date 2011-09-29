@@ -8,9 +8,19 @@ GEM
       git (>= 1.2.5)
       rake
     libxml-ruby (2.2.2)
+    mechanize (2.0.1)
+      net-http-digest_auth (>= 1.1.1, ~> 1.1)
+      net-http-persistent (~> 1.8)
+      nokogiri (~> 1.4)
+      webrobots (>= 0.0.9, ~> 0.0)
+    net-http-digest_auth (1.1.1)
+    net-http-persistent (1.9)
+    nokogiri (1.5.0)
     rake (0.8.7)
     rcov (0.9.10)
     shoulda (2.11.3)
+    webrobots (0.0.11)
+      nokogiri (>= 1.4.4)
 
 PLATFORMS
   ruby
@@ -20,6 +30,7 @@ DEPENDENCIES
   damerau-levenshtein (>= 0.5.3)
   jeweler (~> 1.6.4)
   libxml-ruby (>= 2.2.2)
+  mechanize (>= 2.0.0)
   rake (= 0.8.7)
   rcov
   shoulda

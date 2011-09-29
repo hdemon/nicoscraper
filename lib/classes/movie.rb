@@ -126,7 +126,7 @@ module Nicos
       result = con.get(host, entity)
 
       if
-        result["order"] == "success"
+        result["order"] == "afterTheSuccess"
       then
         parsed = Nicos::Parser::getThumbInfo(result["body"])
         set(parsed)

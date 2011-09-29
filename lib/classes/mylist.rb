@@ -153,10 +153,8 @@ module Nicos
       puts @mylist_id
       entity = '/mylist/' + @mylist_id.to_s + '?rss=atom&numbers=1'
       result = con.get(host, entity)
-
-      if
-        result["order"] == "success"
-      then
+      
+      if result["order"] == "afterTheSuccess"
         parsed = Nicos::Parser::mylistAtom(result["body"])
         
         parsed["entry"].each { |e|

@@ -9,7 +9,7 @@ NicoScraper
 **Author:**  Masami Yonehara  
 **Copyright:**  2011  
 **License:**  MIT License  
-**Latest Version:**  0.2.7
+**Latest Version:**  0.2.7  
 **Release Date:**  Sep 25th 2011  
  
 
@@ -18,17 +18,24 @@ NicoScraper
 
 　ニコニコ動画の動画ページ、検索ページ、あるいはそのAtomフィードから情報を取得し、その情報に対して各種操作を行えます。タグやマイリスト検索結果からの抽出、および抽出結果に対する反復処理を行うメソッドも備え、ランキングサイト等の制作を支援します。
 
-インストール
+導入
 ------
-　Ruby 1.9.2において動作を確認しています。インストールには、
+
+1. インストール
+
+　動作にはRuby 1.9.2 が必要です。インストールには、
 
     $ gem install nicoscraper
 
-　として下さい。もしlibxml2が足りない、extconfにオプションを指定しろ等のエラーが出た場合には、libxmlが入っていないかパスが通っていません。
+　として下さい。依存関係としてMechanizeとlibxml-rubyがインストールされます。
 
-    yum install -y libxml2 libxml2-devel
+　もし`libxml2`や`libxslt`が足りない等のエラーが出た場合には、それらを導入して下さい。yumならば、
 
-　などとして、libxmlを入れ直してから再度gemを実行して下さい。成功すれば、
+    yum install -y libxml2 libxml2-devel libxslt libxslt-devel
+
+　とすれば、だいたい解決すると思います。
+
+2. 使用法　
 
     require 'nicoscraper' 
 
@@ -49,9 +56,9 @@ NicoScraper
     movie = Nicos::Movie::new("sm1097445")
     movie.getInfo
 
-    p movie
+　上の例のように、Movieクラスのインスタンス（以下「動画インスタンス」）を動画IDを与えて生成した後、`getInfo`メソッドを利用します。その結果、
 
-　Movieクラスのインスタンス（以下「動画インスタンス」）を動画IDを与えて生成した後、`getInfo`メソッドを利用します。その結果、
+    p movie
 
     <Nicos::Movie:0x00000002537aa8
       @video_id="sm1097445", 
@@ -85,10 +92,9 @@ NicoScraper
 
     mylist = Nicos::Mylist::new("15196568")
     mylist.getInfo
+このように実行すると、
 
     p mylist
-
-このように実行すると、
 
     <Nicos::Mylist:0x00000002884670
       @mylist_id=15196568,
@@ -97,12 +103,12 @@ NicoScraper
           @video_id="sm8481759", 
           @available=true, 
           @title="【Oblivion】おっさんの大冒険１（ゆっくり実況）",
-          ...
+          ... ,
         #<Nicos::Movie:0x0000000251a6b0 
           @video_id="sm8506034",
           @available=true,
           @title="【Oblivion】おっさんの大冒険２（ゆっくり実況）",
-          ...
+          ... ,
       ],
       @available=true,
       @title="【Oblivion】おっさんの大冒険", 
@@ -119,7 +125,7 @@ NicoScraper
 
     t = Time.now
     tda = Date::new(t.year, t.month, t.day) - 3
-    threeDaysAgo = Time.local(ytd.year, ytd.month, ytd.day, 0, 0, 0).to_i
+    threeDaysAgo = Time.local(tda.year, tda.month, tda.day, 0, 0, 0).to_i
 
     searchByTag = Nicos::Searcher::ByTag.new()
     searchByTag.execute(
@@ -128,7 +134,7 @@ NicoScraper
     ) { |result, page|
       terminate = false
 
-      result.each { |movie|
+      result.each { |movie| # first_retrieve == 投稿日
         terminate = ( movie.first_retrieve <= threeDaysAgo )
         
         puts movie.title +
@@ -139,7 +145,7 @@ NicoScraper
       if terminate
         puts "loop terminated."
       else
-        "continue" 
+        "continue" # "continue"を返すと検索を継続
       end
     }
 

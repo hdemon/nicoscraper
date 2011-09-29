@@ -11,37 +11,44 @@ module Nicos
       def initialize
         # デフォルトのウェイト設定
         @seqTime = 0
-        @result = {}
+        @result = {
+          "notPublic" => [],
+          "limInCommunity" => [],
+          "notFound" => [],
+          "deleted" => [],
+          "succeededNum" => 0
+        }
         @waitConfig = @@waitConfig
       end
       attr_accessor :waitConfig
+      attr_accessor :result
 
       private
       
       def notPublic
         # マイリスト非公開のときに403になる。後で専用の処理を入れるべき。
         puts "This movie/mylist is not public."
-        @result = "notPublic"
-        return { "order" => "terminate" }  
+        @result["notPublic"].push(@nowAccess)
+        return { "order" => "skip" }  
       end
 
       def limInCommunity
         puts "This movie/mylist is limited in comunity members."
         # ex. item_id -> 1294702905
-        @result = "limInCommunity"
-        return { "order" => "terminate" }   
+        @result["limInCommunity"].push(@nowAccess)
+        return { "order" => "skip" }   
       end
 
       def notFound
         puts "This movie/mylist is not found."
-        @result = "notFound"
-        return { "order" => "terminate" }  
+        @result["notFound"].push(@nowAccess)
+        return { "order" => "skip" }  
       end
 
       def deleted
         puts "This movie/mylist is deleted."
-        @result = "deleted"
-        return { "order" => "terminate" }  
+        @result["deleted"].push(@nowAccess)
+        return { "order" => "skip" }  
       end
 
       def deniedSeqReq
@@ -72,7 +79,14 @@ module Nicos
         return { "order" => "retry" } 
       end
 
-      def success(resBody)
+      def reachedLast
+        puts "Reached the last page."
+        @result = "reachedLast"
+        return { "order" => "terminate" } 
+      end
+
+      def succeeded(resBody)
+        @result["succeededNum"] += 1
         sleep @waitConfig["each"]
         @seqTime += 1
         
@@ -80,7 +94,7 @@ module Nicos
           sleep @waitConfig["afterSeq"]
           @seqTime = 0
         end
-        return { "order" => "success", "body" => resBody } 
+        return { "order" => "afterTheSuccess", "body" => resBody } 
       end
 
       def wait(status)
@@ -100,6 +114,7 @@ module Nicos
           Net::HTTP.start(host, 80) { |http|
             response = http.get(entity, HEADER)
           }
+          @nowAccess = host + entity
 
         rescue => e
           puts e
@@ -122,8 +137,8 @@ module Nicos
           else
             unknownError
           end    
-        end until res["order"] == "success" ||
-                  res["order"] == "terminate"
+        end until res["order"] == "afterTheSuccess" ||
+                  res["order"] == "skip"
 
         res
       end
@@ -144,7 +159,7 @@ module Nicos
         then
           serverIsBusy
         else
-          success(resBody)
+          succeeded(resBody)
         end      
       end
     end
@@ -158,13 +173,15 @@ module Nicos
       end
 
       def reviewRes(resBody)
+        resBody = resBody.force_encoding("UTF-8")
         if # アクセス集中時
-          /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~
-            resBody.force_encoding("UTF-8")
-        then
+          /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~         
+          resBody then
           serverIsBusy
+        elsif /\<entry\>/ =~ resBody && /\<\/entry\>/ =~ resBody
+          succeeded(resBody)          
         else
-          success(resBody)
+          reachedLast
         end      
       end
     end
@@ -187,7 +204,7 @@ module Nicos
             serverIsBusy
           end
         else
-          success(resBody)
+          succeeded(resBody)
         end      
       end
     end

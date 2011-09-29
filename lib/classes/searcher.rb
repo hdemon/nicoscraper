@@ -15,7 +15,7 @@ module Nicos
     class ByTagSuper < Nicos::Connector::Config
       private
 
-      def get(tag, sort, page, method)
+      def get(tag, sort, method)
         paramAry = []
 
         case sort
@@ -45,9 +45,9 @@ module Nicos
             sortStr = 'sort=l&order=a'
         end
 
-        paramAry.push("page=#{page}") if page != 1
+        paramAry.push("page=#{@page}") if @page != 1
         paramAry.push(sortStr)
-        if method == "atom" then paramAry.push("rss=atom&numbers=1") end
+        paramAry.push("rss=atom&numbers=1") if method == "atom"
         param = tag + "?" + paramAry.join('&')
 
         host = 'www.nicovideo.jp'
@@ -57,20 +57,19 @@ module Nicos
       end
 
       def loop(tag, sort, method, &block)
-        termFlag    = false
-        page        = 1
+        @page = 1
         movieObjAry = []
-        order = "continue"
+        order       = ""
 
         begin
            response = get(
             tag,
             sort,
-            page,
             method
           )
+          debugger
 
-          if response["order"] == "success"
+          if response["order"] == "afterTheSuccess"
             result = parse(response["body"])
             result.each { |each|
               movie = Nicos::Movie.new(each["video_id"])
@@ -78,10 +77,14 @@ module Nicos
               movie.set(each)
               movieObjAry.push(movie)
             }
+          elsif response["order"] == "terminate"
+            puts "Request loop terminated."
+            break
           end
 
-          order = block.call(movieObjAry, page)
-          page += 1
+          status = {:page => @page, :results => @connector.result}
+          order = block.call(movieObjAry, status)
+          @page += 1
         end until order != "continue"
       end
 

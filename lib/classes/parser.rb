@@ -204,16 +204,16 @@ module Nicos
             /(<p\sclass\=\"nico-info-length\"\>)([^\<]{1,})/ =~ html
             length = $2
 
-            /(<p\sclass\=\"nico-info-date\"\>)([^\<]{1,})/ =~ html
-            first_retrieve = $2
+            /(<strong\sclass\=\"nico-info-date\"\>)([^\<]{1,})/ =~ html
+            first_retrieve = Nicos::Converter.japToUnix($2)
 
-            /(<p\sclass\=\"nico-numbers-view\"\>)([^\<]{1,})/ =~ html
+            /(<strong\sclass\=\"nico-numbers-view\"\>)([^\<]{1,})/ =~ html
             view = $2
 
-            /(<p\sclass\=\"nico-numbers-res\"\>)([^\<]{1,})/ =~ html
+            /(<strong\sclass\=\"nico-numbers-res\"\>)([^\<]{1,})/ =~ html
             res = $2
 
-            /(<p\sclass\=\"nico-numbers-mylist\"\>)([^\<]{1,})/ =~ html
+            /(<strong\sclass\=\"nico-numbers-mylist\"\>)([^\<]{1,})/ =~ html
             mylist = $2
             
             parsed["entry"][n]["memo"] = memo 
@@ -227,7 +227,8 @@ module Nicos
           end  
         end
       end
-
+      p html
+debugger 
       doc.close 
       parsed
     end
