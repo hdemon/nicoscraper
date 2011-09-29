@@ -47,8 +47,48 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
       @result = result
 
       count += 1
-      puts count
       "continue" unless count >= 3
+    }
+    puts "end"
+  end
+
+  it "should have Array of movie objects." do
+    @result   .should be_kind_of(Array)
+    @result[0].should be_instance_of(Nicos::Movie)
+  end
+
+  it "should contains movie objects that have following structure." do
+    @result[0].available    .should be_true
+  
+    @result[0].video_id     .should_not be_nil
+    @result[0].title        .should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
+    #@result[0].memo         .should_not be_nil
+    @result[0].description  .should_not be_nil
+    @result[0].thumbnail_url.should_not be_nil
+    @result[0].create_time  .should_not be_nil
+    @result[0].update_time  .should_not be_nil
+    @result[0].length       .should_not be_nil
+
+    @result[0].view_counter .should_not be_nil
+    @result[0].comment_num  .should_not be_nil
+    @result[0].mylist_counter.should_not be_nil 
+  end    
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "and searcher reaches the last page." do  
+  before(:all) do
+    searcher = Nicos::Searcher::ByTag.new()
+    count = 0
+
+    searcher.execute("アヤックス", "post_old") { |result, status|
+      @result = result
+
+      count += 1
+      puts count
+      "continue"
     }
     puts "end"
   end
