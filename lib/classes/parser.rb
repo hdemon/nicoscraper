@@ -43,9 +43,7 @@ module Nicos
             parsed[label] =  Nicos::Converter.iso8601ToUnix(doc.value)        
           when "length"
             doc.read
-            lengthStr = doc.value.split(/\:/)
-            length   = lengthStr[0].to_i * 60 + lengthStr[1].to_i
-            parsed["length"] =  length
+            parsed["length"] = Nicos::Converter.toSeconds(doc.value)
           when "tags"
             doc.move_to_attribute("domain")
             category = doc.value
@@ -84,42 +82,40 @@ module Nicos
             parsed[n] = {}
           when "title"
             doc.read
-            parsed[n]["title"] =  doc.value
+            parsed[n]["title"] = doc.value
           when "link"
             doc.move_to_attribute("href")
-            parsed[n]["video_id"] =  doc.value.split('/')[4]
+            parsed[n]["video_id"] = doc.value.split('/')[4]
           when "published", "updated"
             label = doc.name
             doc.read
-            parsed[n][label] =  Nicos::Converter.iso8601ToUnix(doc.value)
+            parsed[n][label] = Nicos::Converter.iso8601ToUnix(doc.value)
           when "p"
             doc.move_to_attribute("class")
             case doc.value
             when "nico-thumbnail"
               doc.read
               doc.move_to_attribute("src")
-              parsed[n]["thumbnail_url"] =  doc.value
+              parsed[n]["thumbnail_url"] = doc.value
             when "nico-description"
               doc.read
-              parsed[n]["description"] =  doc.value
+              parsed[n]["description"] = doc.value
             end
           when "strong"
             doc.move_to_attribute("class")
             case doc.value
             when "nico-info-length"
               doc.read
-              lengthStr = doc.value.split(/\:/)
-              length   = lengthStr[0].to_i * 60 + lengthStr[1].to_i
-              parsed[n]["length"] =  length
+              parsed[n]["length"] = Nicos::Converter.toSeconds(doc.value)
             when "nico-info-date"
               label = doc.name
               doc.read
-              parsed[n]["first_retrieve"] =  Nicos::Converter.japToUnix(doc.value)
-           when "nico-numbers-view", "nico-numbers-res",
+              parsed[n]["first_retrieve"] = Nicos::Converter.japToUnix(doc.value)
+            when "nico-numbers-view", "nico-numbers-res",
                   "nico-numbers-mylist"
               label = doc.value
               doc.read
-              parsed[n][label.slice(13,99)] =  doc.value.to_i
+              parsed[n][label.slice(13,99)] = Nicos::Converter::commaRemover(doc.value)
             end
           end   
         end
@@ -201,20 +197,20 @@ module Nicos
             /(<p\sclass\=\"nico-description\"\>)([^\<]{1,})/ =~ html
             description = $2
 
-            /(<p\sclass\=\"nico-info-length\"\>)([^\<]{1,})/ =~ html
-            length = $2
+            /(<strong\sclass\=\"nico-info-length\"\>)([^\<]{1,})/ =~ html
+            length = Nicos::Converter.toSeconds($2)
 
             /(<strong\sclass\=\"nico-info-date\"\>)([^\<]{1,})/ =~ html
             first_retrieve = Nicos::Converter.japToUnix($2)
 
             /(<strong\sclass\=\"nico-numbers-view\"\>)([^\<]{1,})/ =~ html
-            view = $2
+            view = Nicos::Converter.commaRemover($2)
 
             /(<strong\sclass\=\"nico-numbers-res\"\>)([^\<]{1,})/ =~ html
-            res = $2
+            res = Nicos::Converter.commaRemover($2)
 
             /(<strong\sclass\=\"nico-numbers-mylist\"\>)([^\<]{1,})/ =~ html
-            mylist = $2
+            mylist = Nicos::Converter.commaRemover($2)
             
             parsed["entry"][n]["memo"] = memo 
             parsed["entry"][n]["thumbnail_url"] = thumbnail_url 

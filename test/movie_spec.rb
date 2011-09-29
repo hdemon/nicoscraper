@@ -7,6 +7,7 @@ describe Nicos::Movie, "After executiton of 'getInfo' method" do
   before(:all) do
     @movie = Nicos::Movie.new("sm1097445")
     @movie.getInfo
+    p @movie
   end
 
   it "should have following values" do

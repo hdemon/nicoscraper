@@ -27,9 +27,9 @@ describe Nicos::Movie, "After executiton of 'getInfo' method" do
     movieObj.thumbnail_url.should_not be_nil
     movieObj.length       .should_not be_nil
 
-    movieObj.view_counter .should_not be_nil
-    movieObj.comment_num  .should_not be_nil
-    movieObj.mylist_counter.should_not be_nil 
+    movieObj.view_counter .should_not == 0
+    movieObj.comment_num  .should_not == 0
+    movieObj.mylist_counter.should_not == 0
   end    
 
 end
