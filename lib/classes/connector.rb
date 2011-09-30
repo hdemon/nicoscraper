@@ -73,18 +73,18 @@ module Nicos
         # デフォルトのウェイト設定
         @seqTime = 0
         @result = {
-          "allDisabled" => [],
-          "notPublic" => [],
-          "limInCommunity" => [],
-          "notFound" => [],
-          "deleted" => [],
+          :allDisabled => [],
+          :notPublic => [],
+          :limInCommunity => [],
+          :notFound => [],
+          :deleted => [],
 
-          "deniedSeqReq" => 0,
-          "serverIsBusy" => 0,
-          "serviceUnavailable" => 0,
-          "timedOut" => 0,
+          :deniedSeqReq => 0,
+          :serverIsBusy => 0,
+          :serviceUnavailable => 0,
+          :timedOut => 0,
 
-          "succeededNum" => 0
+          :succeededNum => 0
         }
         @waitConfig = @@waitConfig
       end
@@ -96,90 +96,92 @@ module Nicos
       # 再試行しない例外の共通処理
       def accessDisabled(exception)
         @result[exception].push(@nowAccess)
-        { "order" => "skip", "status" => exception }  
+        { :order => :skip, :status => exception }  
       end
        
       def allDisabled
         # MylistAtomについて、全ての動画が非公開あるいはその他の理由でRSSフィードに掲載されない時。
         puts "All movies are disabled."
-        accessDisabled("allDisabled") 
+        accessDisabled(:allDisabled) 
       end
       
       def notPublic
         # マイリスト非公開のときに403になる。
         # http://www.nicovideo.jp/mylist/25479830
         puts "This movie/mylist is not public."
-        accessDisabled("notPublic") 
+        accessDisabled(:notPublic) 
       end
 
       def limInCommunity
         puts "This movie/mylist is limited in comunity members."
         # ex. item_id -> 1294702905
-        accessDisabled("limInCommunity") 
+        accessDisabled(:limInCommunity) 
       end
 
       def notFound
         puts "This movie/mylist is not found."
-        accessDisabled("notFound") 
+        accessDisabled(:notFound) 
       end
 
       def deleted # マイリストは削除と404の区別がない？
         puts "This movie/mylist is deleted."
-        accessDisabled("deleted") 
+        accessDisabled(:deleted) 
       end
 
       # 以下、再試行の可能性のある例外
 
       # 共通処理
       def exception(exception, retryCount)
-        if retryCount <= @waitConfig[exception]["retryLimit"]
-          { "order" => "skip" }   
+        if retryCount <= @waitConfig[exception][:retryLimit]
+          { :order => :skip }   
         else
-          sleep @waitConfig[exception]["wait"]
+          sleep @waitConfig[exception][:wait]
           @result[exception] += 1
-          { "order" => "retry" }   
+          { :order => :retry }   
         end        
       end
 
       def deniedSeqReq(retryCount)
         puts "Denied sequential requests."
-        exception("deniedSeqReq", retryCount)
+        exception(:deniedSeqReq, retryCount)
       end
 
       def serverIsBusy(retryCount)
         puts "The server is busy."
-        exception("serverIsBusy", retryCount)
+        exception(:serverIsBusy, retryCount)
       end
 
       def serviceUnavailable(retryCount)
         puts "Service unavailable."
-        exception("serviceUnavailable", retryCount)
+        exception(:serviceUnavailable, retryCount)
       end
 
       def timedOut(retryCount)
         puts "Request timed out."
-        exception("timedOut", retryCount)
+        exception(:timedOut, retryCount)
       end
 
 
       def reachedLast 
         # TagAtom専用。MylistAtomは、allDisabledと結果が被ってしまう。
         puts "Reached the last page."
-        return { "order" => "terminate" } 
+        { :order => :terminate } 
       end
 
       def succeeded(resBody)
-        @result["succeededNum"] += 1
-        sleep @waitConfig["each"]
+        @result[:succeededNum] += 1
+        sleep @waitConfig[:each]
         @seqTime += 1
         
-        if @seqTime >= @waitConfig["seqAccLimit"]
-          sleep @waitConfig["afterSeq"]
+        if @seqTime >= @waitConfig[:seqAccLimit]
+          sleep @waitConfig[:afterSeq]
           @seqTime = 0
         end
-        return { 
-          "order" => "afterTheSuccess", 
-          "body" => resBody
+        
+        { 
+          :status => :success,
+          :order => :afterTheSuccess, 
+          :body => resBody
         } 
       end
 
@@ -194,17 +196,17 @@ module Nicos
       # 単一リクエストメソッド用に構造を変換する。
       def getStatus
         status = {
-          "status"  => nil,
-          "retry"   => {}
+          :status => nil,
+          :retry  => {}
         }
 
         @result.each_key do |key|
           if @result[key].instance_of?(Array) && @result[key].length >= 1
-            status["status"] = key
-          elsif key === "succeededNum" && @result[key] >= 1
-            status["status"] = "success"
+            status[:status] = key
+          elsif key === :succeededNum && @result[key] >= 1
+            status[:status] = :success
           elsif @result[key].instance_of?(Fixnum)
-            status["retry"][key] = @result[key]
+            status[:retry][key] = @result[key]
           end
         end
 
@@ -231,7 +233,7 @@ module Nicos
         rescue Timeout::Error => e  
           debugger
           timeOut 
-          res["order"] = "retry"     
+          res[:order] = :retry     
 
         else
           res = case response
@@ -250,7 +252,7 @@ module Nicos
           else
             unknownError
           end    
-        end until res["order"] != "retry"
+        end until res[:order] != :retry
 
         res
       end

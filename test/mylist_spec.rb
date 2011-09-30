@@ -63,8 +63,8 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
 
   it "should " do
     r = @mylist.getInfo
-    r["status"]  .should === "notFound"
-    r["result"]  .should be_nil
+    r[:status]  .should === "notFound"
+    r[:result]  .should be_nil
 
     @mylist.available   .should_not be_true
   end
@@ -79,8 +79,8 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
 
   it "should " do
     r = @mylist.getInfo
-    r["status"]  .should === "notPublic"
-    r["result"]  .should be_nil
+    r[:status]  .should === "notPublic"
+    r[:result]  .should be_nil
 
     @mylist.available   .should_not be_true
   end
@@ -95,9 +95,9 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
 
   it "should " do
     r = @mylist.getInfo
-    # r["status"]  .should === "deleted"
-    r["status"]  .should === "notFound"
-    r["result"]  .should be_nil
+    # r["status]  .should === "deleted"
+    r[:status]  .should === "notFound"
+    r[:result]  .should be_nil
 
     @mylist.available   .should_not be_true
   end

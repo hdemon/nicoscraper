@@ -25,29 +25,29 @@ describe "When execute 'Nicos::Connector::setWait" do
   it "should have following values." do
     c = Nicos::Searcher::ByTag.new()  
     c.waitConfig    .should_not be_nil
-    c.waitConfig["seqAccLimit"]
+    c.waitConfig[:seqAccLimit]
                     .should == 100
-    c.waitConfig["afterSeq"]
+    c.waitConfig[:afterSeq]
                     .should == 10
-    c.waitConfig["each"]
+    c.waitConfig[:each]
                     .should == 1
-    c.waitConfig["increment"]
+    c.waitConfig[:increment]
                     .should == 1
-    c.waitConfig["deniedSeqReq"]["retryLimit"]
+    c.waitConfig[:deniedSeqReq][:retryLimit]
                     .should == 30
-    c.waitConfig["deniedSeqReq"]["wait"]
+    c.waitConfig[:deniedSeqReq][:wait]
                     .should == 1200
-    c.waitConfig["serverIsBusy"]["retryLimit"]
+    c.waitConfig[:serverIsBusy][:retryLimit]
                     .should == 10
-    c.waitConfig["serverIsBusy"]["wait"]
+    c.waitConfig[:serverIsBusy][:wait]
                     .should == 120
-    c.waitConfig["serviceUnavailable"]["retryLimit"]
+    c.waitConfig[:serviceUnavailable][:retryLimit]
                     .should == 3
-    c.waitConfig["serviceUnavailable"]["wait"]
+    c.waitConfig[:serviceUnavailable][:wait]
                     .should == 120
-    c.waitConfig["timedOut"]["retryLimit"]
+    c.waitConfig[:timedOut][:retryLimit]
                     .should == 3
-    c.waitConfig["timedOut"]["wait"]
+    c.waitConfig[:timedOut][:wait]
                     .should == 10
   end
 
@@ -79,55 +79,55 @@ describe "When execute 'Nicos::Connector::setWait" do
 
   it "should have following values." do
     @c1.waitConfig    .should_not be_nil
-    @c1.waitConfig["seqAccLimit"]
+    @c1.waitConfig[:seqAccLimit]
                     .should == 100
-    @c1.waitConfig["afterSeq"]
+    @c1.waitConfig[:afterSeq]
                     .should == 10
-    @c1.waitConfig["each"]
+    @c1.waitConfig[:each]
                     .should == 1
-    @c1.waitConfig["increment"]
+    @c1.waitConfig[:increment]
                     .should == 1
-    @c1.waitConfig["deniedSeqReq"]["retryLimit"]
+    @c1.waitConfig[:deniedSeqReq][:retryLimit]
                     .should == 30
-    @c1.waitConfig["deniedSeqReq"]["wait"]
+    @c1.waitConfig[:deniedSeqReq][:wait]
                     .should == 1200
-    @c1.waitConfig["serverIsBusy"]["retryLimit"]
+    @c1.waitConfig[:serverIsBusy][:retryLimit]
                     .should == 10
-    @c1.waitConfig["serverIsBusy"]["wait"]
+    @c1.waitConfig[:serverIsBusy][:wait]
                     .should == 120
-    @c1.waitConfig["serviceUnavailable"]["retryLimit"]
+    @c1.waitConfig[:serviceUnavailable][:retryLimit]
                     .should == 3
-    @c1.waitConfig["serviceUnavailable"]["wait"]
+    @c1.waitConfig[:serviceUnavailable][:wait]
                     .should == 120
-    @c1.waitConfig["timedOut"]["retryLimit"]
+    @c1.waitConfig[:timedOut][:retryLimit]
                     .should == 3
-    @c1.waitConfig["timedOut"]["wait"]
+    @c1.waitConfig[:timedOut][:wait]
                     .should == 10
 
     @c2.waitConfig    .should_not be_nil
-    @c2.waitConfig["seqAccLimit"]
+    @c2.waitConfig[:seqAccLimit]
                     .should == 10
-    @c2.waitConfig["afterSeq"]
+    @c2.waitConfig[:afterSeq]
                     .should == 10
-    @c2.waitConfig["each"]
+    @c2.waitConfig[:each]
                     .should == 1
-    @c2.waitConfig["increment"]
+    @c2.waitConfig[:increment]
                     .should == 1
-    @c2.waitConfig["deniedSeqReq"]["retryLimit"]
+    @c2.waitConfig[:deniedSeqReq][:retryLimit]
                     .should == 3
-    @c2.waitConfig["deniedSeqReq"]["wait"]
+    @c2.waitConfig[:deniedSeqReq][:wait]
                     .should == 120
-    @c2.waitConfig["serverIsBusy"]["retryLimit"]
+    @c2.waitConfig[:serverIsBusy][:retryLimit]
                     .should == 3
-    @c2.waitConfig["serverIsBusy"]["wait"]
+    @c2.waitConfig[:serverIsBusy][:wait]
                     .should == 120
-    @c2.waitConfig["serviceUnavailable"]["retryLimit"]
+    @c2.waitConfig[:serviceUnavailable][:retryLimit]
                     .should == 3
-    @c2.waitConfig["serviceUnavailable"]["wait"]
+    @c2.waitConfig[:serviceUnavailable][:wait]
                     .should == 120
-    @c2.waitConfig["timedOut"]["retryLimit"]
+    @c2.waitConfig[:timedOut][:retryLimit]
                     .should == 3
-    @c2.waitConfig["timedOut"]["wait"]
+    @c2.waitConfig[:timedOut][:wait]
                     .should == 10
   end
 end
@@ -236,11 +236,11 @@ p @status
   end   
 
   it "should contains movie objects that have following structure." do
-    @status["results"]["notPublic"]    .should be_instance_of(Array)
-    @status["results"]["limInCommunity"].should be_instance_of(Array)
-    @status["results"]["notFound"]     .should be_instance_of(Array)
-    @status["results"]["deleted"]      .should be_instance_of(Array)
-    @status["results"]["succeededNum"] .should >= 0
+    @status[:results][:notPublic]    .should be_instance_of(Array)
+    @status[:results][:limInCommunity].should be_instance_of(Array)
+    @status[:results][:notFound]     .should be_instance_of(Array)
+    @status[:results][:deleted]      .should be_instance_of(Array)
+    @status[:results][:succeededNum] .should >= 0
   end    
 end
 
@@ -282,4 +282,26 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     @result[0].comment_num  .should_not be_nil
     @result[0].mylist_counter.should_not be_nil 
   end    
+end
+
+describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
+          "and exception caused." do  
+  before(:all) do
+    searcher = Nicos::Searcher::ByTag.new()
+    count = 0
+
+    searcher.execute("アヤックス", "post_old") { |result, status|
+      @result = result
+
+      count += 1
+      puts count
+      "continue"
+    }
+  end
+
+  it "should have Array of movie objects." do
+    @result   .should be_kind_of(Array)
+    @result[0].should be_instance_of(Nicos::Movie)
+  end
+  
 end

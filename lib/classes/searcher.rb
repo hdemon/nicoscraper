@@ -46,7 +46,7 @@ module Nicos
 
         paramAry.push("page=#{@page}") if @page != 1
         paramAry.push(sortStr)
-        paramAry.push("rss=atom&numbers=1") if method == "atom"
+        paramAry.push("rss=atom&numbers=1") if method == :atom
         param = tag + "?" + paramAry.join('&')
 
         host = 'www.nicovideo.jp'
@@ -67,23 +67,23 @@ module Nicos
             method
           )
 
-          if response["order"] == "afterTheSuccess"
-            result = parse(response["body"])
+          if response[:order] == :afterTheSuccess
+            result = parse(response[:body])
             result.each { |each|
-              movie = Nicos::Movie.new(each["video_id"])
-              each["available"] = true
+              movie = Nicos::Movie.new(each[:video_id])
+              each[:available] = true
               movie.set(each)
               movieObjAry.push(movie)
             }
-          elsif response["order"] == "terminate"
+          elsif response[:order] == :terminate
             puts "Request loop terminated."
             break
           end
 
-          status = {"page" => @page, "results" => @connector.result}
+          status = { :page => @page, :results => @connector.result}
           order = block.call(movieObjAry, status)
           @page += 1
-        end until order != "continue"
+        end until order != :continue
       end
 
       public
@@ -96,7 +96,7 @@ module Nicos
         @numOfSearched = 32
         @incrAmt = 0.2
 
-        @connector = Nicos::Connector.new('mech')
+        @connector = Nicos::Connector.new(:mech)
 
         # HTML中の各パラメータの所在を示すXPath
         @videoIdXP  = "//div[@class='uad_thumbfrm']/table/tr/td/p/a"
@@ -127,12 +127,12 @@ module Nicos
                     .text.gsub(/\,/, '').to_i
 
         result.push({
-          "video_id"  => video_id,
-          "length"    => length,
-          "view"      => view,
-          "res"       => res,
-          "mylist"    => mylist,
-          "ad"        => ad
+          :video_id => video_id,
+          :length   => length,
+          :view     => view,
+          :res      => res,
+          :mylist   => mylist,
+          :ad       => ad
         })
       end
 
@@ -142,7 +142,7 @@ module Nicos
       # @param [String] sortMethod
       # @param [HashObj] waitConfig
       def execute(tag, sortMethod, &block)
-        loop(tag, sort, "mech") { |result, page|
+        loop(tag, sort, :mech) { |result, page|
           block.call(result, page)
         }
       end
@@ -174,7 +174,7 @@ module Nicos
       # 
       # searcher = Nicos::Searcher::ByTag.new()
       # searcher.execute('VOCALOID', 'view_many') {
-      #  |result, page|
+      #  |result, status|
       # 
       #  result.each { |movieObj|
       #    puts movieObj.title 
@@ -277,6 +277,39 @@ module Nicos
       #      'wait'        => 10
       #    }
       #  }
+      #
+      #==ブロック内の第2引数について
+      #
+      # 第2引数には、それまでの検索の成否、例外の発生回数などを記録した
+      # ハッシュが渡されます。これは以下のような構造になっています。
+      #
+      # {
+      #   "allDisabled" => [],
+      #   "notPublic" => [],
+      #   "limInCommunity" => [],
+      #   "notFound" => [],
+      #   "deleted" => [],
+      # 
+      #   "deniedSeqReq" => 0,
+      #   "serverIsBusy" => 0,
+      #   "serviceUnavailable" => 0,
+      #   "timedOut" => 0,
+      # 
+      #   "succeededNum" => 0
+      # }
+      # **allDisabled**  
+      # 
+      # **notPublic**  
+      # **limInCommunity**  
+      # **notFound**  
+      # **deleted**  
+      # 
+      # **deniedSeqReq**  
+      # **serverIsBusy**  
+      # **serviceUnavailable**  
+      # **timedOut**  
+      # 
+      # **succeededNum**  
       def execute(tag, sortMethod, &block)
         loop(tag, sortMethod, "atom") { |result, page|
           block.call(result, page)

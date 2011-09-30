@@ -46,12 +46,12 @@ describe Nicos::Movie, "After executiton of 'getInfo' method." +
   end
 
   it "should return the following values." do
-    @result["parsed"]   .should be_instance_of(Hash)
-    @result["status"]   .should be_instance_of(String)
-    @result["retry"]    .should have_key("deniedSeqReq")
-    @result["retry"]    .should have_key("serverIsBusy")
-    @result["retry"]    .should have_key("serviceUnavailable")
-    @result["retry"]    .should have_key("timedOut")
+    @result[:parsed]   .should be_instance_of(Hash)
+    @result[:status]   .should equal(:success)
+    @result[:retry]    .should have_key(:deniedSeqReq)
+    @result[:retry]    .should have_key(:serverIsBusy)
+    @result[:retry]    .should have_key(:serviceUnavailable)
+    @result[:retry]    .should have_key(:timedOut)
 
   end
 end

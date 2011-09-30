@@ -58,6 +58,7 @@ module Nicos
       return similarity
     end
 
+=begin
     # 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
     def getInfoHtml
       con = Nicos::Connector::Html.new('mech')
@@ -108,15 +109,15 @@ module Nicos
       if desc != nil then desc = desc.scan(/[^\"]{1,}/)[0] end
 
       paramObj = {
-        "id"            => id,
-        "user_id"       => user_id,
-        "name"          => name,
-        "description"   => description,
-        "public"        => public,
-        "default_sort"  => default_sort,
-        "create_time"   => create_time,
-        "update_time"   => update_time,
-        "icon_id"       => icon_id
+        :id            => id,
+        :user_id       => user_id,
+        :name          => name,
+        :description   => description,
+        :public        => public,
+        :default_sort  => default_sort,
+        :create_time   => create_time,
+        :update_time   => update_time,
+        :icon_id       => icon_id
         # "sort_order"  => ,
       }
       set(paramObj)  
@@ -142,7 +143,7 @@ module Nicos
         @movies.push(movie)
       }    
     end
-
+=end
     # マイリストのAtomフィードから、マイリストとそれに含まれる動画の情報を取得する。
     #
     # @return [Fixnum] 編集距離に基づく類似度。上限は1、下限はなし。
@@ -153,23 +154,23 @@ module Nicos
       entity = '/mylist/' + @mylist_id.to_s + '?rss=atom&numbers=1'
       result = con.get(host, entity)
 
-      if result["order"] == "afterTheSuccess"
-        parsed = Nicos::Parser::mylistAtom(result["body"])
+      if result[:order] == :afterTheSuccess
+        parsed = Nicos::Parser::mylistAtom(result[:body])
         
-        parsed["entry"].each { |e|
-          movie = Nicos::Movie.new(e["video_id"])
-          e["available"] = true
+        parsed[:entry].each { |e|
+          movie = Nicos::Movie.new(e[:video_id])
+          e[:available] = true
           movie.set(e)
           @movies.push(movie)
         }
 
         @available = true
-        set(parsed["mylist"])
-        { "result" => parsed, "status" => "success"}
+        set(parsed[:mylist])
+        { :result => parsed, :status => :success}
       else
-        status = Nicos::Connector::convertSt(result["status"])
+        status = Nicos::Connector::convertSt(result[:status])
         @available = false
-        { "result" => nil, "status" => status }
+        { :result => nil, :status => status }
       end  
     end  
 
@@ -178,34 +179,34 @@ module Nicos
       paramObj.each_key { |key|
         param = paramObj[key]
         case key
-        when "mylist_id"    
+        when "mylist_id",  :mylist_id
           @mylist_id = param
-        when "id"    
+        when "id",         :id
           @mylist_id = param
-      	when "user_id"
+      	when "user_id",    :user_id
           @user_id = param
-      	when "title"
+      	when "title",      :title
           @title = param
-      	when "description"
+      	when "description",:description
           @description = param
-      	when "public"
+      	when "public",     :public
           @public = param
-      	when "default_sort"
+      	when "default_sort",:default_sort
           @default_sort = param
-      	when "create_time"
+      	when "create_time",:create_time
           @create_time = param
-      	when "update_time"
+      	when "update_time",:updated_time
           @update_time = param
-      	when "icon_id"
+      	when "icon_id",    :icon_id
           @icon_id = param
-      	when "sort_order"
+      	when "sort_order", :sort_order
           @sort_order = param
-      	when "movies"
+      	when "movies",     :movies
           @movies = param
 
-      	when "updated"
+      	when "updated",    :updated
           @update_time = param
-      	when "author"
+      	when "author",     :author
           @author = param
         end
       }   

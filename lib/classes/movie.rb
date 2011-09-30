@@ -9,7 +9,6 @@ require 'parser.rb'
 require 'mylist.rb'
 require 'connector.rb'
 
-
 module Nicos
   class Movie  
     # @param [video_id] video_id 動画ID
@@ -129,16 +128,16 @@ module Nicos
       result = con.get(host, entity)
       status = con.getStatus
 
-      if result["order"] == "afterTheSuccess"
-        parsed = Nicos::Parser::getThumbInfo(result["body"])
+      if result[:order] == :afterTheSuccess
+        parsed = Nicos::Parser::getThumbInfo(result[:body])
         set(parsed)
         @available = true
       end
 
       { 
-        "parsed"  => parsed, 
-        "status"  => status["status"],
-        "retry"   => status["retry"]
+        :parsed  => parsed, 
+        :status  => status[:status],
+        :retry   => status[:retry]
       }
     end
     
@@ -156,110 +155,65 @@ module Nicos
       paramObj.each_key { |key|
         param = paramObj[key]
         case key
-        when "available"
-          @available = param
+        when "available", :available      then @available = param
          
         # common  
-        when "video_id"
-          @video_id = param.to_s
-        when "item_id"
-          @item_id = param.to_i
-        when "title"
-          @title = param.to_s
-        when "mylist_id"    
-          @mylist_id = param.to_i
-      	when "description"
-          @description = param.to_s   
-        when "length"
-          @length = param.to_i   
-        when "first_retrieve"
-          @first_retrieve = param       
+        when "video_id",  :video_id       then @video_id = param.to_s
+        when "item_id",   :item_id        then @item_id = param.to_i
+        when "title",     :title          then @title = param.to_s
+        when "mylist_id", :mylist_id      then @mylist_id = param.to_i
+        when "description",:description   then @description = param.to_s   
+        when "length",    :length         then @length = param.to_i   
+        when "first_retrieve", :first_retrieve then @first_retrieve = param       
         
         # MylistAPI 現在未実装    
         when "item_data"
-          paramObj['item_data'].each_key { |key|
-          param = paramObj['item_data'][key]
+          paramObj['item_data'].each_key do |key|
+            param = paramObj['item_data'][key]
             case key
-            when "video_id"
-              @video_id = param.to_s  
-          	when "title"
-              @title = param.to_s
-          	when "thumbnail_url"
-              @thumbnail_url = param.to_s
-          	when "first_retrieve"
-              @first_retrieve = param.to_i
-          	when "update_time"
-              @update_time = param.to_i
-          	when "view_counter"
-              @view_counter = param.to_i
-          	when "mylist_counter"
-              @mylist_counter = param.to_i
-          	when "num_res"
-              @comment_num = param.to_i
-          	when "length_seconds"
-              @length = param.to_i
-          	when "deleted"
-              @deleted = param.to_i       
-          	when "last_res_body"
-              @last_res_body = param.to_s
+            when "video_id"         then @video_id = param.to_s  
+            when "title"            then @title = param.to_s
+            when "thumbnail_url"    then @thumbnail_url = param.to_s
+            when "first_retrieve"   then @first_retrieve = param.to_i
+            when "update_time"      then @update_time = param.to_i
+            when "view_counter"     then @view_counter = param.to_i
+            when "mylist_counter"   then @mylist_counter = param.to_i
+            when "num_res"          then @comment_num = param.to_i
+            when "length_seconds"   then @length = param.to_i
+            when "deleted"          then @deleted = param.to_i       
+            when "last_res_body"    then @last_res_body = param.to_s
             end
-          } 
-      	when "watch"
-          @watch = param.to_i
-      	when "create_time"
-          @create_time = param.to_i
-      	when "update_time"
-          @update_time = param.to_i
+          end 
+        when "watch",      :watch       then @watch = param.to_i
+        when "create_time",:create_time then @create_time = param.to_i
+        when "update_time",:update_time then @update_time = param.to_i
         
         # Mylist-Atom
-      	when "memo"
-          @memo = param.to_s       
-      	when "published"
-          @create_time = param.to_i     
-      	when "updated"
-          @update_time = param.to_i 
-        when "view"
-          @view_counter = param.to_i
-        when "mylist"
-          @mylist_counter = param.to_i
-        when "res"
-          @comment_num = param.to_i       
+        when "memo",      :memo       then @memo = param.to_s       
+        when "published", :published  then @create_time = param.to_i     
+        when "updated",   :updated    then @update_time = param.to_i 
+        when "view",      :view       then @view_counter = param.to_i
+        when "mylist",    :mylist     then @mylist_counter = param.to_i
+        when "res",       :res        then @comment_num = param.to_i       
         
         # getThumbInfo  
-      	when "thumbnail_url"
-          @thumbnail_url = param.to_s
-      	when "movie_type"
-          @movie_type = param.to_s
-        when "size_high"
-          @size_high = param.to_i
-      	when "size_low"
-          @size_low = param.to_i
-      	when "view_counter"
-          @view_counter = param.to_i
-      	when "mylist_counter"
-          @mylist_counter = param.to_i
-      	when "comment_num"
-          @comment_num = param.to_i
-      	when "last_res_body"
-          @last_res_body = param.to_s
-      	when "watch_url"
-          @watch_url = param.to_s
-      	when "thumb_type"
-          @thumb_type = param.to_s
-      	when "embeddable"
-          @embeddable = param.to_i
-      	when "no_live_play"
-          @no_live_play = param.to_i
-      	when "tags_jp"
-          @tags_jp = param
-        when "tags_tw"
-          @tags_tw = param
-      	when "tags_de"
-          @tags_de = param
-        when "tags_es"
-          @tags_sp = param
-      	when "user_id"
-          @user_id = param.to_i
+        when "thumbnail_url", :thumbnail_url  then @thumbnail_url = param.to_s
+        when "movie_type", :movie_type        then @movie_type = param.to_s
+        when "size_high", :size_high          then @size_high = param.to_i
+        when "size_low", :size_low            then @size_low = param.to_i
+        when "view_counter", :view_counter    then @view_counter = param.to_i
+        when "mylist_counter", :mylist_counter then @mylist_counter = param.to_i
+        when "comment_num", :comment_num      then @comment_num = param.to_i
+        when "last_res_body", :last_res_body  then @last_res_body = param.to_s
+        when "watch_url", :watch_url          then @watch_url = param.to_s
+        when "thumb_type", :thumb_type        then @thumb_type = param.to_s
+        when "embeddable", :embeddable        then @embeddable = param.to_i
+        when "no_live_play", :no_live_play    then @no_live_play = param.to_i
+        when "tags_jp", :tags_jp              then @tags_jp = param
+        when "tags_tw", :tags_tw              then @tags_tw = param
+        when "tags_de", :tags_de              then @tags_de = param
+        when "tags_es", :tags_es              then @tags_sp = param
+        when "user_id", :user_id              then @user_id = param.to_i
         end
       }   
     end  
@@ -282,7 +236,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
-    attr_accessor	:video_id
+    attr_accessor :video_id
 
     # この動画が属するマイリストのID  
     #
@@ -292,7 +246,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
-    attr_accessor	:mylist_id
+    attr_accessor :mylist_id
 
     # 動画に与えられるもう一つの一意なIDであり、投稿日時と同じか非常に近いUNIX時間になっている。
     #
@@ -304,7 +258,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
-    attr_accessor	:item_id
+    attr_accessor :item_id
     
     # 投稿者が記述した動画の説明文
     #
@@ -314,7 +268,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
-    attr_accessor	:description
+    attr_accessor :description
 
     # 動画のタイトル
     #
@@ -324,7 +278,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:title
+    attr_accessor :title
 
     # サムネイルのURL
     #
@@ -334,7 +288,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:thumbnail_url
+    attr_accessor :thumbnail_url
 
     # 動画の投稿日
     #
@@ -344,7 +298,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:first_retrieve
+    attr_accessor :first_retrieve
 
     # 取得時の再生数
     #
@@ -354,7 +308,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:view_counter
+    attr_accessor :view_counter
 
     # 取得時のマイリスト数
     #
@@ -364,7 +318,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:mylist_counter
+    attr_accessor :mylist_counter
 
     #　取得時のコメント数
     #
@@ -374,7 +328,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:comment_num
+    attr_accessor :comment_num
 
     # 動画の長さ（秒）
     #
@@ -384,7 +338,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:length
+    attr_accessor :length
 
     # 削除されたかどうか。削除済みの場合は1、そうでなければ0。
     #
@@ -394,7 +348,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:deleted
+    attr_accessor :deleted
 
     # 最新のコメント
     #
@@ -404,7 +358,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:last_res_body
+    attr_accessor :last_res_body
 
     # ?
     #
@@ -414,7 +368,7 @@ module Nicos
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:watch
+    attr_accessor :watch
 
     # 動画の投稿日に近いが、若干こちらの方が遅い。詳細不明。
     #
@@ -424,7 +378,7 @@ module Nicos
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-    attr_accessor	:create_time
+    attr_accessor :create_time
 
     # 動画の更新日？
     #
@@ -455,35 +409,35 @@ module Nicos
     # @return [String]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
-    attr_accessor	:movie_type
+    attr_accessor :movie_type
 
     # 高画質時の動画サイズ？
     #
     # @return [Fixnum]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
-    attr_accessor	:size_high
+    attr_accessor :size_high
 
     # 低画質時の動画サイズ？
     #
     # @return [Fixnum]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
-    attr_accessor	:size_low
+    attr_accessor :size_low
 
     # 動画の閲覧URL
     #
     # @return [String]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
-    attr_accessor	:watch_url
+    attr_accessor :watch_url
 
     # ？
     #
     # @return [String]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
-    attr_accessor	:thumb_type
+    attr_accessor :thumb_type
 
     # ブログ等に埋め込み、ログインなしでも閲覧できるかどうか。可能なら1。
     #
@@ -506,14 +460,14 @@ module Nicos
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
-    attr_accessor	:tags_jp
+    attr_accessor :tags_jp
 
     # 台湾タグ
     #
     # @return [Array<String>]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
-    attr_accessor	:tags_tw
+    attr_accessor :tags_tw
 
     # ユーザID
     #
@@ -521,7 +475,7 @@ module Nicos
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
-    attr_accessor	:user_id
+    attr_accessor :user_id
   end
 end
 
