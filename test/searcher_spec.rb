@@ -166,7 +166,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     @count = 0
 
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
+    searcher.execute("ゆっくり実況プレイpart1リンク", :post_old) { |result|
       @count += 1
       "not continue"
     }
@@ -183,7 +183,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     @count = 0
 
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result|
+    searcher.execute("ゆっくり実況プレイpart1リンク", :post_old) { |result|
       @count += 1
       nil
     }
@@ -200,7 +200,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     count = 0
 
-    searcher.execute("ゆっくり実況プレイpart1リンク", "post_old") { |result, status|
+    searcher.execute("ゆっくり実況プレイpart1リンク", :post_old:) { |result, status|
       @result = result
       @status = status
 p @status
@@ -249,7 +249,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     count = 0
 
-    searcher.execute("アヤックス", "post_old") { |result, status|
+    searcher.execute("アヤックス", :post_old) { |result, status|
       @result = result
 
       count += 1
@@ -289,7 +289,7 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     count = 0
 
-    searcher.execute("アヤックス", "post_old") { |result, status|
+    searcher.execute("アヤックス", :post_old) { |result, status|
       @result = result
 
       count += 1

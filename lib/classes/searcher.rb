@@ -18,29 +18,29 @@ module Nicos
         paramAry = []
 
         case sort
-          when 'comment_new'
+          when :comment_new
             sortStr = ''
-          when 'comment_old'
+          when :comment_old
             sortStr = 'order=a'
-          when 'view_many'
+          when :view_many
             sortStr = 'sort=v'
-          when 'view_few'
+          when :view_few
             sortStr = 'sort=v&order=a'
-          when 'comment_many'
+          when :comment_many
             sortStr = 'sort=r'
-          when 'comment_few'
+          when :comment_few
             sortStr = 'sort=r&order=a'
-          when 'mylist_many'
+          when :mylist_many
             sortStr = 'sort=m'
-          when 'mylist_few'
+          when :mylist_few
             sortStr = 'sort=m&order=a'
-          when 'post_new'
+          when :post_new
             sortStr = 'sort=f'
-          when 'post_old'
+          when :post_old
             sortStr = 'sort=f&order=a'
-          when 'length_long'
+          when :length_long
             sortStr = 'sort=l'
-          when 'length_short'
+          when :length_short
             sortStr = 'sort=l&order=a'
         end
 
