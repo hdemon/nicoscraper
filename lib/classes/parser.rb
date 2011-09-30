@@ -18,6 +18,7 @@ module Nicos
         doc.value.to_i
       when :String  then 
         doc.read
+        p doc.value
         doc.value
       when :ISO8601 then 
         doc.read
@@ -87,7 +88,7 @@ module Nicos
           :lockedTags => lockedTags
         }
       end 
-      
+
       hash[symbol] = value
       hash
     end
@@ -226,10 +227,10 @@ module Nicos
         unless doc.node_type == XML::Reader::TYPE_END_ELEMENT
           row = case doc.name
           when "title" then
-            /(マイリスト)(.+)(‐ニコニコ動画)/ =~ parseRow(:title, :String,  doc)["title"]
-            $2
-          when "id"       then parseRow(:mylist_id,   :String,  doc)
-          when "subtitle" then parseRow(:descrpition, :String,  doc)
+            /(マイリスト )(.+)(‐ニコニコ動画)/ =~ parseRow(:title, :String,  doc)[:title]
+            { :title => $2 }
+          when "id"       then parseRow(:mylist_id,   :mylistId,doc)
+          when "subtitle" then parseRow(:description,  :String,  doc)
           when "updated"  then parseRow(:updated,     :ISO8601, doc)
           when "name"     then parseRow(:author,      :String,  doc)
           end
@@ -263,7 +264,7 @@ module Nicos
             /(<p\sclass=\"nico-thumbnail\">.+src=\")(http:\/\/[^\"]{1,})/ =~ html
             thumbnail_url = $2
             
-            /(<p\sclass\=\"nico-description\"\>)([^\<]{1,})/ =~ html
+            /(<p\sclass=\"nico-description\"\>)([^\<]{1,})/ =~ html
             description = $2
 
             /(<strong\sclass\=\"nico-info-length\"\>)([^\<]{1,})/ =~ html
@@ -284,7 +285,7 @@ module Nicos
             {
               :memo             => memo,
               :thumbnail_url    => thumbnail_url,
-              :descrpition      => description,
+              :description      => description,
               :length           => length,
               :first_retrieve   => first_retrieve,
               :view             => view,
@@ -296,7 +297,9 @@ module Nicos
           parsed[:entry][n].update(row) if row != nil  
         end
       end
-      
+      p parsed
+
+
       doc.close 
       parsed
     end

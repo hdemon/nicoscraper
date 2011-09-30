@@ -148,11 +148,15 @@ module Nicos
     #
     # @return [Fixnum] 編集距離に基づく類似度。上限は1、下限はなし。
     def getInfo
+      parsed = nil
+      @available = false
+
       con = Nicos::Connector::MylistAtom.new()
       host = 'www.nicovideo.jp'
-      puts @mylist_id
       entity = '/mylist/' + @mylist_id.to_s + '?rss=atom&numbers=1'
+
       result = con.get(host, entity)
+      status = con.getStatus
 
       if result[:order] == :afterTheSuccess
         parsed = Nicos::Parser::mylistAtom(result[:body])
@@ -164,56 +168,40 @@ module Nicos
           @movies.push(movie)
         }
 
-        @available = true
         set(parsed[:mylist])
-        { :result => parsed, :status => :success}
-      else
-        status = Nicos::Connector::convertSt(result[:status])
-        @available = false
-        { :result => nil, :status => status }
+        @available = true
       end  
+
+      { 
+        :parsed  => parsed, 
+        :status  => status[:status],
+        :retry   => status[:retry]
+      }      
     end  
 
     # {Movie#set}　を参照。
     def set(paramObj)
-      paramObj.each_key { |key|
+      paramObj.each_key do |key|
         param = paramObj[key]
         case key
-        when "mylist_id",  :mylist_id
-          @mylist_id = param
-        when "id",         :id
-          @mylist_id = param
-      	when "user_id",    :user_id
-          @user_id = param
-      	when "title",      :title
-          @title = param
-      	when "description",:description
-          @description = param
-      	when "public",     :public
-          @public = param
-      	when "default_sort",:default_sort
-          @default_sort = param
-      	when "create_time",:create_time
-          @create_time = param
-      	when "update_time",:updated_time
-          @update_time = param
-      	when "icon_id",    :icon_id
-          @icon_id = param
-      	when "sort_order", :sort_order
-          @sort_order = param
-      	when "movies",     :movies
-          @movies = param
-
-      	when "updated",    :updated
-          @update_time = param
-      	when "author",     :author
-          @author = param
+        when "mylist_id",  :mylist_id     then @mylist_id = param
+        when "user_id",    :user_id       then @user_id = param
+        when "title",      :title         then @title = param
+        when "description",:description   then @description = param
+        when "public",     :public        then @public = param
+        when "default_sort",:default_sort then @default_sort = param
+        when "create_time",:create_time   then @create_time = param
+        when "update_time",:updated_time  then @update_time = param
+        when "icon_id",    :icon_id       then @icon_id = param
+        when "sort_order", :sort_order    then @sort_order = param
+        when "movies",     :movies        then @movies = param
+        when "updated",    :updated       then @update_time = param
+        when "author",     :author        then @author = param
         end
-      }   
+      end   
     end
 
     include Nicos::Connector::SetWait 
-
 
     # このインスタンスがgetInfo等によって正常に情報を取得できている場合、trueとなる。
     # 各種メソッドの実行には、これがtrueであることが要求される。
@@ -234,23 +222,23 @@ module Nicos
     # @return [Fixnum]
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}   
-  	attr_accessor :user_id 
+    attr_accessor :user_id 
 
     # マイリストのタイトル
     #
-    # @return [Fixnum]
+    # @return [String]
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}   
-  	attr_accessor :title   
+    attr_accessor :title   
 
     # マイリストの説明文
     #
-    # @return [Fixnum]
+    # @return [String]
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}    
-  	attr_accessor :description
+    attr_accessor :description
 
     # 公開設定
     #
@@ -259,7 +247,7 @@ module Nicos
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
-  	attr_accessor :public 
+    attr_accessor :public 
 
     # ソート順の設定
     #
@@ -268,7 +256,7 @@ module Nicos
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}    
-  	attr_accessor :default_sort 
+    attr_accessor :default_sort 
 
     # マイリスト作成日時
     #
@@ -276,7 +264,7 @@ module Nicos
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
-  	attr_accessor :create_time
+    attr_accessor :create_time
 
     # マイリストの更新日時
     #
@@ -284,7 +272,7 @@ module Nicos
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}  
-  	attr_accessor :update_time  
+    attr_accessor :update_time  
 
     # アイコンの色？
     #
@@ -292,7 +280,7 @@ module Nicos
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     # {Nicos::Movie#getInfo Mylist::getHtmlInfo}
-  	attr_accessor :icon_id
+    attr_accessor :icon_id
 
     # 現在のソート順
     #
@@ -304,7 +292,7 @@ module Nicos
 
     # 作成者の名前
     #
-    # @return [Fixnum]
+    # @return [String]
     # <b>取得可能なメソッド</b> 
     # {Nicos::Movie#getInfo Mylist::getInfo}  
     attr_accessor :author
