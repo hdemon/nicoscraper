@@ -297,8 +297,6 @@ module Nicos
           parsed[:entry][n].update(row) if row != nil  
         end
       end
-      p parsed
-
 
       doc.close 
       parsed

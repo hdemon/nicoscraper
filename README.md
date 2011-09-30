@@ -9,8 +9,8 @@ NicoScraper
 **Author:**  Masami Yonehara  
 **Copyright:**  2011  
 **License:**  MIT License  
-**Latest Version:**  0.2.7  
-**Release Date:**  Sep 25th 2011  
+**Latest Version:**  0.2.10  
+**Release Date:**  Sep 30th 2011  
  
 
 何をするライブラリ？
@@ -130,7 +130,7 @@ NicoScraper
     searchByTag = Nicos::Searcher::ByTag.new()
     searchByTag.execute(
       'VOCALOID', 
-      'post_new'
+      :post_new
     ) { |result, status|
       terminate = false
 
@@ -194,34 +194,31 @@ NicoScraper
 　それを防ぐための措置の一つが、`"continue"`を明示的に返さないとスクレイピングが継続しない仕様ですが、もう一つ、アクセス中のウェイトを任意に設定できるようにしています。具体的には、連続リクエストの上限回数、連続リクエスト後のウェイト、1リクエスト毎のウェイト、連続アクセス拒絶時やサーバ混雑時の再試行までのウェイトなどです。ウェイトの設定は、以下のように`Nicos::Connector::Config::waitConfig`に与えられています。以下はデフォルトの設定です。
 
     Nicos::Connector::Config::waitConfig = {
+      :seqAccLimit => 10,  # 連続してリクエストする回数
+      :afterSeq    => 10,  # 連続リクエスト後のウェイト（以下全て単位は秒）
+      :each        => 1,   # 連続リクエスト時の、1リクエスト毎のウェイト
 
-      # module::Searcher用の設定
-      'seqAccLimit' => 10,  # 連続してリクエストする回数
-      'afterSeq'    => 10,  # 連続リクエスト後のウェイト（以下全て単位は秒）
-      'each'        => 5,   # 連続リクエスト時の、1リクエスト毎のウェイト
+      :increment   => 1,   # 例外発生時の、次回以降の1リクエスト毎のウェイトの増加量
 
-      # 全メソッド共通の設定
-      'deniedSeqReq'=> {    # 連続アクセス拒絶時
-        'retryLimit'  => 3,   # 再試行回数の上限
-        'wait'        => 120  # 再試行までのウェイト
+      :deniedSeqReq=> {    # 連続アクセス拒絶時
+        :retryLimit  => 3,   # 再試行回数の上限
+        :wait        => 120  # 再試行までのウェイト
       },
       
-      'serverIsBusy'=> {    # サーバ混雑時
-        'retryLimit'  => 3,
-        'wait'        => 120
+      :serverIsBusy=> {    # サーバ混雑時
+        :retryLimit  => 3,
+        :wait        => 120
       },
       
-      'serviceUnavailable' => { # 503時
-        'retryLimit'  => 3,
-        'wait'        => 120
+      :serviceUnavailable => { # 503時
+        :retryLimit  => 3,
+        :wait        => 120
       },
       
-      'timedOut' => {       # タイムアウト時
-        'retryLimit'  => 3,
-        'wait'        => 10
-      },
-
-      'increment'   => 1    # 異常ステータス時の、次回以降の1リクエスト毎のウェイトの増加量
+      :timedOut => {       # タイムアウト時
+        :retryLimit  => 3,
+        :wait        => 10
+      }
     }
 
 ###連続リクエストとは？
@@ -271,10 +268,10 @@ NicoScraper
 　なお、setWaitメソッドは指定したキーの部分のみを上書きするため、設定毎に上記の書式のハッシュオブジェクトを用意する必要はありません。
 
     wait = {
-      'seqAccLimit' => 100,
+      :seqAccLimit => 100,
      
-      'deniedSeqReq'=> {   
-        'wait'        => 1200  
+      :deniedSeqReq => {   
+        :wait        => 1200  
       }
     }
 
@@ -344,7 +341,9 @@ GitHubを経由して下さってもいいのですが、まだ慣れていな�
 
 + 例外発生時に終了してしまうバグを修正。
 
-+ Searcher実行時のステータスの詳細化。
++ リクエスト成否等のステータスの詳細化。
+
++ パラメータの文字列による指定からシンボルによる指定への変更。
 
 **v 0.2.8 0.2.9**
 

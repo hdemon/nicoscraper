@@ -8,8 +8,6 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
     @mylist.getInfo
-    puts "!!!"
-    p @mylist.movies[0]
   end
 
 
@@ -110,7 +108,6 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" do
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
     @mylist.getInfo
-    puts @mylist
   end
 
   it "should return over 0.9 when execute 'getSimilarity' method." +

@@ -59,91 +59,92 @@ module Nicos
     end
 
 =begin
-    # 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
-    def getInfoHtml
-      con = Nicos::Connector::Html.new('mech')
-      reqUrl = 'http://www.nicovideo.jp' +
-        '/mylist/' + @mylist_id.to_s
-      mechPage = con.mechGet(reqUrl)
-      result = []
+# 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
+def getInfoHtml
+  con = Nicos::Connector::Html.new('mech')
+  reqUrl = 'http://www.nicovideo.jp' +
+    '/mylist/' + @mylist_id.to_s
+  mechPage = con.mechGet(reqUrl)
+  result = []
 
-      # Mylist自身の情報を取得    
-      jsonStr = mechPage.search(
-        "/html/body/div[2]" +
-        "/div/div[2]/script[7]"
-      ).to_html
-      
-      reg = /MylistGroup\.preloadSingle.{1,}?Mylist\.preload\(/m
-      mlJson = jsonStr.scan(reg)[0]
-        
-      id = mlJson.scan(/\sid:[^\n]{1,}/)[0]
-          .scan(/[0-9]{1,}/)[0]
-      user_id = mlJson.scan(/\suser_id:[^\n]{1,}/)[0]
-          .scan(/[0-9]{1,}/)[0]
-      name = mlJson.scan(/\sname:[^\n]{1,}/)[0]
-        name = name.slice(
-          " name: \"".length,
-          name.length - " name: \"".length - "\",\n".length
-        )
-      desc = mlJson.scan(/\sdescription:.{1,}/)[0]
-        desc = desc.slice(
-          " description: \"".length,
-          desc.length - " description: \"".length - "\",\npublic".length
-        )
-      public = mlJson.scan(/\spublic:[^,]{1,}/)[0]
-          .scan(/[0-9]{1,}/)[0]
-      default_sort = mlJson.scan(/\sdefault_sort:[^\n]{1,}/)[0]
-          .scan(/[0-9]{1,}/)[0]
-      create_time = mlJson.scan(/\screate_time:[^\n]{1,}/)[0]
-          .scan(/[0-9]{1,}/)[0]
-      update_time = mlJson.scan(/\supdate_time:[^\n]{1,}/)[0]
-          .scan(/[0-9]{1,}/)[0]
-      icon_id = mlJson.scan(/\sicon_id:[^\n]{1,}/)[0]
-          .scan(/[0-9]{1,}/)[0]
-   
-     # mlJson = mlJson.scan(/[^\r\n  ]{1,}/).join('')
-      #mlJson = mlJson.scan(/{.+/)[0].split(',')
-      
-      # 説明文が空欄だった時の措置。
-      desc   = mlJson[3].scan(/\".+\"/)[0]
-      if desc != nil then desc = desc.scan(/[^\"]{1,}/)[0] end
+  # Mylist自身の情報を取得    
+  jsonStr = mechPage.search(
+    "/html/body/div[2]" +
+    "/div/div[2]/script[7]"
+  ).to_html
+  
+  reg = /MylistGroup\.preloadSingle.{1,}?Mylist\.preload\(/m
+  mlJson = jsonStr.scan(reg)[0]
+    
+  id = mlJson.scan(/\sid:[^\n]{1,}/)[0]
+      .scan(/[0-9]{1,}/)[0]
+  user_id = mlJson.scan(/\suser_id:[^\n]{1,}/)[0]
+      .scan(/[0-9]{1,}/)[0]
+  name = mlJson.scan(/\sname:[^\n]{1,}/)[0]
+    name = name.slice(
+      " name: \"".length,
+      name.length - " name: \"".length - "\",\n".length
+    )
+  desc = mlJson.scan(/\sdescription:.{1,}/)[0]
+    desc = desc.slice(
+      " description: \"".length,
+      desc.length - " description: \"".length - "\",\npublic".length
+    )
+  public = mlJson.scan(/\spublic:[^,]{1,}/)[0]
+      .scan(/[0-9]{1,}/)[0]
+  default_sort = mlJson.scan(/\sdefault_sort:[^\n]{1,}/)[0]
+      .scan(/[0-9]{1,}/)[0]
+  create_time = mlJson.scan(/\screate_time:[^\n]{1,}/)[0]
+      .scan(/[0-9]{1,}/)[0]
+  update_time = mlJson.scan(/\supdate_time:[^\n]{1,}/)[0]
+      .scan(/[0-9]{1,}/)[0]
+  icon_id = mlJson.scan(/\sicon_id:[^\n]{1,}/)[0]
+      .scan(/[0-9]{1,}/)[0]
 
-      paramObj = {
-        :id            => id,
-        :user_id       => user_id,
-        :name          => name,
-        :description   => description,
-        :public        => public,
-        :default_sort  => default_sort,
-        :create_time   => create_time,
-        :update_time   => update_time,
-        :icon_id       => icon_id
-        # "sort_order"  => ,
-      }
-      set(paramObj)  
-      
-      # 自分に含まれる動画の情報を取得
-      jsonStr = mechPage.search(
-        "/html/body/div[2]" +
-        "/div/div[2]/script[7]"
-      ).to_html
+ # mlJson = mlJson.scan(/[^\r\n  ]{1,}/).join('')
+  #mlJson = mlJson.scan(/{.+/)[0].split(',')
+  
+  # 説明文が空欄だった時の措置。
+  desc   = mlJson[3].scan(/\".+\"/)[0]
+  if desc != nil then desc = desc.scan(/[^\"]{1,}/)[0] end
 
-      mvJson = jsonStr.scan(/Mylist.preload.+/)[0]
-      mvJson = mvJson.scan(/\".{1,}/)[0]
-      mvJson = mvJson.slice(0, mvJson.length - 5)
-      #mvJson = mvJson.split('},{')
-      mvJson = Nicos::Unicode.unescape(mvJson).split('},{')
-      
-      mvJson.each { |e|
-        e = "{" + e + "}"
-        param = JSON.parse(e) 
-        movie = Nicos::Movie.new(param['item_data']['video_id'])
-        movie.set(param)
-        
-        @movies.push(movie)
-      }    
-    end
+  paramObj = {
+    :id            => id,
+    :user_id       => user_id,
+    :name          => name,
+    :description   => description,
+    :public        => public,
+    :default_sort  => default_sort,
+    :create_time   => create_time,
+    :update_time   => update_time,
+    :icon_id       => icon_id
+    # "sort_order"  => ,
+  }
+  set(paramObj)  
+  
+  # 自分に含まれる動画の情報を取得
+  jsonStr = mechPage.search(
+    "/html/body/div[2]" +
+    "/div/div[2]/script[7]"
+  ).to_html
+
+  mvJson = jsonStr.scan(/Mylist.preload.+/)[0]
+  mvJson = mvJson.scan(/\".{1,}/)[0]
+  mvJson = mvJson.slice(0, mvJson.length - 5)
+  #mvJson = mvJson.split('},{')
+  mvJson = Nicos::Unicode.unescape(mvJson).split('},{')
+  
+  mvJson.each { |e|
+    e = "{" + e + "}"
+    param = JSON.parse(e) 
+    movie = Nicos::Movie.new(param['item_data']['video_id'])
+    movie.set(param)
+    
+    @movies.push(movie)
+  }    
+end
 =end
+
     # マイリストのAtomフィードから、マイリストとそれに含まれる動画の情報を取得する。
     #
     # @return [Fixnum] 編集距離に基づく類似度。上限は1、下限はなし。
