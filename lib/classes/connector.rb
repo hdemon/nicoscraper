@@ -69,6 +69,8 @@ module Nicos
     #
     # **succeededNum**  
     class Connector < Config
+      include Nicos::Connector::SetWait
+
       def initialize
         # デフォルトのウェイト設定
         @seqTime = 0

@@ -7,15 +7,15 @@ require '../lib/nicoscraper.rb'
 describe "When execute 'Nicos::Connector::setWait" do
   before(:all) do
     wait = {
-      'seqAccLimit' => 100,
+      :seqAccLimit => 100,
      
-      'deniedSeqReq'=> {   
-        'retryLimit'  => 30,  
-        'wait'        => 1200  
+      :deniedSeqReq => {   
+        :retryLimit   => 30,  
+        :wait         => 1200  
       },
       
-      'serverIsBusy'=> {   
-        'retryLimit'  => 10
+      :serverIsBusy => {   
+        :retryLimit  => 10
       }
     }
 
@@ -52,22 +52,22 @@ describe "When execute 'Nicos::Connector::setWait" do
   end
 
   after(:all) do
-    Nicos::Connector::Config::setWait("default")
+    Nicos::Connector::Config::setWait(:default)
   end  
 end
 
 describe "When execute 'Nicos::Connector::setWait" do
   before(:all) do
     wait = {
-      'seqAccLimit' => 100,
+      :seqAccLimit => 100,
      
-      'deniedSeqReq'=> {   
-        'retryLimit'  => 30,  
-        'wait'        => 1200  
+      :deniedSeqReq => {   
+        :retryLimit   => 30,  
+        :wait         => 1200  
       },
       
-      'serverIsBusy'=> {   
-        'retryLimit'  => 10
+      :serverIsBusy => {   
+        :retryLimit  => 10
       }
     }
 
@@ -136,34 +136,33 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
           "and return a string except \"continue\" in this block" do  
   before(:all) do
     wait = {
-      'seqAccLimit' => 0,  # 連続してリクエストする回数
-      'afterSeq'    => 0,  # 連続リクエスト後のウェイト（以下全て単位は秒）
-      'each'        => 0,   # 連続リクエスト時の、1リクエスト毎のウェイト
+      :seqAccLimit => 100,  # 連続してリクエストする回数
+      :afterSeq    => 0,  # 連続リクエスト後のウェイト（以下全て単位は秒）
+      :each        => 0,   # 連続リクエスト時の、1リクエスト毎のウェイト
 
-      'increment'   => 0,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
+      :increment   => 0,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
 
-      'deniedSeqReq'=> {    # 連続アクセス拒絶時
-        'retryLimit'  => 3,   # 再試行回数の上限
-        'wait'        => 120  # 再試行までのウェイト
+      :deniedSeqReq=> {    # 連続アクセス拒絶時
+        :retryLimit  => 3,   # 再試行回数の上限
+        :wait        => 120  # 再試行までのウェイト
       },
       
-      'serverIsBusy'=> {    # サーバ混雑時
-        'retryLimit'  => 3,
-        'wait'        => 120
+      :serverIsBusy=> {    # サーバ混雑時
+        :retryLimit  => 3,
+        :wait        => 120
       },
       
-      'serviceUnavailable' => { # 503時
-        'retryLimit'  => 3,
-        'wait'        => 120
+      :serviceUnavailable => { # 503時
+        :retryLimit  => 3,
+        :wait        => 120
       },
       
-      'timedOut' => {       # タイムアウト時
-        'retryLimit'  => 3,
-        'wait'        => 10
+      :timedOut => {       # タイムアウト時
+        :retryLimit  => 3,
+        :wait        => 10
       }
     }
     Nicos::Connector::Config::setWait(wait)
-
     searcher = Nicos::Searcher::ByTag.new()
     @count = 0
 
