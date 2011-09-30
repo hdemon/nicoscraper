@@ -6,6 +6,68 @@ require 'net/http'
 
 module Nicos
   module Connector
+
+    #
+    #
+    # 
+    #==ブロック内の第2引数について
+    #
+    # 第2引数には、それまでの検索の成否、例外の発生回数などを記録した
+    # ハッシュが渡されます。これは以下のような構造になっています。
+    #
+    # {
+    #   # 各種例外等が発生した動画・マイリストのIDを配列で保管。
+    #   "allDisabled" => [],
+    #   "notPublic" => [],
+    #   "limInCommunity" => [],
+    #   "notFound" => [],
+    #   "deleted" => [],
+    # 
+    #   # 再試行で対処できる例外等が発生した件数。
+    #   "deniedSeqReq" => 0,
+    #   "serverIsBusy" => 0,
+    #   "serviceUnavailable" => 0,
+    #   "timedOut" => 0,
+    # 
+    #   # 成功回数
+    #   "succeededNum" => 0
+    # }
+    #
+    #  これらのパラメータが複数の結果を保持する前提になっているのは、Searcherモジュール
+    # に対応させる為です。将来的には、Movie/Mylistクラス
+    # には専用のハッシュを設ける設計にするつもりです。
+    #
+    # **allDisabled**  
+    # 　マイリストの場合のみ機能。そのマイリスト内の動画が全て非公開、
+    # あるいは削除済み等で存在しないが、マイリストは残っている場合。
+    #
+    # **notPublic**  
+    # 　動画、マイリストが非公開である場合。
+    #
+    # **limInCommunity**  
+    # 　動画、マイリストがコミュニティ限定公開である場合。
+    #
+    # **notFound**  
+    # 　動画、マイリストが存在しない場合。マイリストは削除済みの場合もnotFoundとなる。
+    #
+    # **deleted**  
+    # 　その動画が削除済みである場合。マイリストについては、上のnotFoundと
+    # 区別されない。 
+    #
+    # **deniedSeqReq**  
+    # 　連続アクセスとして明示的に拒否された場合。 
+    #
+    # **serverIsBusy**  
+    # 　「大変ご迷惑をおかけいたしますが、しばらく時間をあけてから
+    # 再度検索いただくようご協力をお願いいたします。」と表示される場合。
+    #
+    # **serviceUnavailable**  
+    # 　503が返ってきた時。
+    #
+    # **timedOut**  
+    # 　タイムアウト
+    #
+    # **succeededNum**  
     class Connector < Config
       def initialize
         # デフォルトのウェイト設定
@@ -44,7 +106,8 @@ module Nicos
       end
       
       def notPublic
-        # マイリスト非公開のときに403になる。後で専用の処理を入れるべき。
+        # マイリスト非公開のときに403になる。
+        # http://www.nicovideo.jp/mylist/25479830
         puts "This movie/mylist is not public."
         accessDisabled("notPublic") 
       end
@@ -99,7 +162,6 @@ module Nicos
       end
 
 
-
       def reachedLast 
         # TagAtom専用。MylistAtomは、allDisabledと結果が被ってしまう。
         puts "Reached the last page."
@@ -115,21 +177,46 @@ module Nicos
           sleep @waitConfig["afterSeq"]
           @seqTime = 0
         end
-        return { "order" => "afterTheSuccess", "body" => resBody } 
+        return { 
+          "order" => "afterTheSuccess", 
+          "body" => resBody
+        } 
       end
 
       def wait(status)
         puts "Wait for " + waitTime + " second."
         sleep @waitConfig[status.to_s]
       end
-        
+
       public
+
+      # リクエスト結果を格納する変数を、MylistやMovie等の
+      # 単一リクエストメソッド用に構造を変換する。
+      def getStatus
+        status = {
+          "status"  => nil,
+          "retry"   => {}
+        }
+
+        @result.each_key do |key|
+          if @result[key].instance_of?(Array) && @result[key].length >= 1
+            status["status"] = key
+          elsif key === "succeededNum" && @result[key] >= 1
+            status["status"] = "success"
+          elsif @result[key].instance_of?(Fixnum)
+            status["retry"][key] = @result[key]
+          end
+        end
+
+        status
+      end        
     end
 
     class Xml < Connector
       def get (host, entity)  
         response = nil
         retryCount = 0
+        res = {}
               
         begin
           @nowAccess = host + entity
@@ -142,7 +229,9 @@ module Nicos
         rescue => e
           puts e
         rescue Timeout::Error => e  
-          timeOut      
+          debugger
+          timeOut 
+          res["order"] = "retry"     
 
         else
           res = case response
@@ -156,6 +245,7 @@ module Nicos
           when Net::HTTPNotFound
             notFound
           when Net::HTTPServiceUnavailable 
+          debugger
             serviceUnavailable
           else
             unknownError

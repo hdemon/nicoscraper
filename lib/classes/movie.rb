@@ -119,20 +119,27 @@ module Nicos
     # 内部的にgetThumbInfo APIを利用。
     # @return [Boolean] 成功すればtrueを返す。
     def getInfo
+      parsed = nil
+      @available = false
+
       con = Nicos::Connector::GetThumbInfo.new()
       host = 'ext.nicovideo.jp'
       entity = '/api/getthumbinfo/' + @video_id
-      result = con.get(host, entity)
 
-      if
-        result["order"] == "afterTheSuccess"
-      then
+      result = con.get(host, entity)
+      status = con.getStatus
+
+      if result["order"] == "afterTheSuccess"
         parsed = Nicos::Parser::getThumbInfo(result["body"])
         set(parsed)
         @available = true
-      else
-        @available = false
       end
+
+      { 
+        "parsed"  => parsed, 
+        "status"  => status["status"],
+        "retry"   => status["retry"]
+      }
     end
     
     # インスタンスに対し、任意の情報を入れる。

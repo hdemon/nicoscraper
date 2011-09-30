@@ -1,14 +1,14 @@
 # -*- encoding: utf-8 -*-
-$:.unshift File.dirname(__FILE__) + "/../lib"
+#$:.unshift File.dirname(__FILE__) + "/../lib"
 
-require 'nicoscraper'
+require '../lib/nicoscraper.rb'
 
 describe Nicos::Movie, "After executiton of 'getInfo' method." +
     "And for example, with passing argument (sm1097445)" do
 
   before(:all) do
     @movie = Nicos::Movie.new("sm1097445")
-    @movie.getInfo
+    @result = @movie.getInfo
   end
 
   it "should have the following structure and values." do
@@ -43,6 +43,16 @@ describe Nicos::Movie, "After executiton of 'getInfo' method." +
     result = @movie.isBelongsTo(1450136)
     result .should_not be_nil
     result .should be_true
+  end
+
+  it "should return the following values." do
+    @result["parsed"]   .should be_instance_of(Hash)
+    @result["status"]   .should be_instance_of(String)
+    @result["retry"]    .should have_key("deniedSeqReq")
+    @result["retry"]    .should have_key("serverIsBusy")
+    @result["retry"]    .should have_key("serviceUnavailable")
+    @result["retry"]    .should have_key("timedOut")
+
   end
 end
 

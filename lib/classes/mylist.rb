@@ -16,7 +16,7 @@ module Nicos
       @movies     = []
       @available  = false
     end
-    
+
     # 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
     # 類似度の平均を返す。
     #
@@ -167,8 +167,9 @@ module Nicos
         set(parsed["mylist"])
         { "result" => parsed, "status" => "success"}
       else
+        status = Nicos::Connector::convertSt(result["status"])
         @available = false
-        { "result" => nil, "status" => result["status"] }
+        { "result" => nil, "status" => status }
       end  
     end  
 
