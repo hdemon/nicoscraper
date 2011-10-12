@@ -200,10 +200,10 @@ describe "When execute 'Nicos::Searcher::ByTag.execute' method " +
     searcher = Nicos::Searcher::ByTag.new()
     count = 0
 
-    searcher.execute("ゆっくり実況プレイpart1リンク", :post_old:) { |result, status|
+    searcher.execute("ゆっくり実況プレイpart1リンク", :post_old) { |result, status|
       @result = result
       @status = status
-p @status
+      
       count += 1
       "continue" unless count >= 3
     }

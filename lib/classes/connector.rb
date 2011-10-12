@@ -172,7 +172,6 @@ module Nicos
         rescue => e
           puts e
         rescue Timeout::Error => e  
-          debugger
           timeOut 
           res[:order] = :retry     
 
@@ -188,7 +187,6 @@ module Nicos
           when Net::HTTPNotFound
             notFound
           when Net::HTTPServiceUnavailable 
-          debugger
             serviceUnavailable
           else
             unknownError

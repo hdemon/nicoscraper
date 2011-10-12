@@ -57,11 +57,11 @@ module Nicos
 
       def loop(tag, sort, method, &block)
         @page = 1
-        movieObjAry = []
         order       = ""
 
         begin
-           response = get(
+          movieObjAry = []
+          response = get(
             tag,
             sort,
             method

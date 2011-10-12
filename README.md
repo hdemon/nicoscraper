@@ -9,8 +9,8 @@ NicoScraper
 **Author:**  Masami Yonehara  
 **Copyright:**  2011  
 **License:**  MIT License  
-**Latest Version:**  0.2.10  
-**Release Date:**  Sep 30th 2011  
+**Latest Version:**  0.2.12 
+**Release Date:**  Oct 12th 2011  
  
 
 何をするライブラリ？
@@ -142,11 +142,8 @@ NicoScraper
              Time.at(movie.first_retrieve).to_s 
       }   
       
-      if terminate
-        puts "loop terminated."
-      else
-        "continue" # "continue"を返すと検索を継続
-      end
+      # "continue"をブロック内で返すと検索を継続
+      "continue" unless terminate
     }
 
 　この例では、`VOCALOID`というタグの付く動画を、`post_new`=投稿日時が新しい順からさかのぼって取得し、取得した動画の日付が3日前の0時0分を超えるまでそれを続けます。 
@@ -337,6 +334,10 @@ GitHubを経由して下さってもいいのですが、まだ慣れていな�
 
 ###更新履歴
 
+**v 0.2.11 0.2.12**
+
++ Seacherの各メソッドで、取得結果が配列に累積されてしまうバグを修正。
+
 **v 0.2.10**
 
 + 例外発生時に終了してしまうバグを修正。
@@ -369,7 +370,7 @@ GitHubを経由して下さってもいいのですが、まだ慣れていな�
 
 **v 0.2.4**
 
-+ ドキュメントの作成。
++ ドキュメントの作成。 
 
 + Searcherループのバグ修正。 
 
