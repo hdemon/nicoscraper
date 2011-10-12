@@ -17,45 +17,70 @@ module Nicos
       @available  = false
     end
 
+    private
+
+    def ngram(data, n)
+      ret = []
+      data.split(//u).each_cons(n) do |a|
+        ret << a.join
+      end
+      ret
+    end
+
+    def sim(a, b, n)
+      agram = ngram(a, n)
+      bgram = ngram(b, n)
+
+      all  = (agram | bgram).size.to_f
+      same = (agram & bgram).size.to_f
+
+      same / all
+    end
+
+    public
+
     # 自分に含まれている動画のタイトルをすべての組み合わせにおいて比較し、
     # 類似度の平均を返す。
     #
     # @return [Fixnum] 編集距離に基づく類似度。上限は1、下限はなし。
     def getSimilarity
       l = @movies.length - 1
-      dlc = DamerauLevenshtein
-      dl = 0.0
-      dlAry = []
+      sim = 0.0
+      simAry = []
       count_o = 0
       count_i = 0
       
-      while count_o <= l do
-        count_i = count_o + 1
-        while count_i <= l do
-          dl = dlc.distance(
-            @movies[count_i].title, 
-            @movies[count_o].title
-          )
-          
-          dl = 1.0 - dl.fdiv( @movies[count_i].title.length)
-          dlAry.push(dl)
-          
-          count_i += 1
+      @movies.each do |movie|
+        puts "\s" + movie.title
+      end
+
+      if @movies.length >= 2 
+        while count_o <= l do
+          count_i = count_o + 1
+          while count_i <= l do
+            simAry.push(
+              sim(
+                @movies[count_i].title, 
+                @movies[count_o].title,
+                3
+              )
+            )
+            count_i += 1
+          end
+          count_o += 1
         end
-        count_o += 1
-      end
       
-      if l != 0 && dlAry.length > 0
         t = 0
-        dlAry.each { |_dl| t += _dl }
-        similarity = t / dlAry.length
-      elsif dlAry.length == 0
-        similarity = 0
-      else
+        simAry.each { |_sim| t += _sim }
+        similarity = t / simAry.length
+        ( similarity * 100 ).round / 100.0 
+      elsif @movies.length == 1
         similarity = 1
+      else
+        similarity = 0
       end
           
-      return similarity
+      similarity
     end
 
 =begin

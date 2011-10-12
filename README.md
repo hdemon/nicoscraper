@@ -129,9 +129,9 @@ NicoScraper
 
     searchByTag = Nicos::Searcher::ByTag.new()
     searchByTag.execute(
-      'VOCALOID', 
-      :post_new
-    ) { |result, status|
+      'VOCALOID',  # 検索したいタグ文字列
+      :post_new    # ソート方法
+    ) { |result, status| # 動画インスタンスの配列 / その時点でのアクセス結果
       terminate = false
 
       result.each { |movie| # first_retrieve == 投稿日
@@ -146,7 +146,7 @@ NicoScraper
       "continue" unless terminate
     }
 
-　この例では、`VOCALOID`というタグの付く動画を、`post_new`=投稿日時が新しい順からさかのぼって取得し、取得した動画の日付が3日前の0時0分を超えるまでそれを続けます。 
+　この例では、`VOCALOID`というタグの付く動画を、`:post_new`=投稿日時が新しい順からさかのぼって取得し、取得した動画の日付が3日前の0時0分を超えるまでそれを続けます。 
 
 　ブロック内の第1引数には取得結果に基づく動画インスタンスが与えられるのですが、これは32個分の配列です。なぜ32個のセットなのかと言うと、ご存知のようにニコニコ動画の検索画面はページで区切られており、Searcherモジュールの各メソッドはページ毎に情報を取得し、ページ単位でブロックをコールするからです。HTMLから取得するにしろAtomフィードから取得するにしろ、1ページに32個の動画情報が含まれています。第2引数にはそれまでのアクセス成否情報等が渡されます。
 

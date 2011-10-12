@@ -13,3 +13,14 @@ def mixinND(targetObj, overWriteObj)
   end
   return output
 end
+
+class Numeric
+  def roundoff(d=0)
+    x = 10**d
+    if self < 0
+      (self * x - 0.5).ceil.quo(x)
+    else
+      (self * x + 0.5).floor.quo(x)
+    end
+  end
+end

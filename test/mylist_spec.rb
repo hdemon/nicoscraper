@@ -8,8 +8,8 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
     @mylist.getInfo
+    p @mylist
   end
-
 
   it "should have the following values" do
     @mylist.available    .should be_true
@@ -29,7 +29,6 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
     @mylist.author       .should == "おぽこ"
   end 
 
-
   it "should have Movie class instances. and these have the following structure." do
     @mylist.available.should be_true
   
@@ -40,6 +39,8 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
     movieObj.available      .should be_true
   
     movieObj.video_id       .should_not be_nil
+    movieObj.item_id        .should_not be_nil
+    movieObj.item_id        .should_not == 0
     movieObj.title          .should_not be_nil
     movieObj.first_retrieve .should_not be_nil
     #movieObj.memo         .should_not be_nil
@@ -114,6 +115,6 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" do
       "passing arguments (1450136)" do
     result = @mylist.getSimilarity
     result .should_not be_nil
-    result .should >= 0.9
+    result .should >= 0.7
   end
 end

@@ -53,42 +53,46 @@ module Nicos
     #
     # isBelongsは指定されたマイリストとの関係を調べるが、isSeriesOfは動画説明文中のマイリストIDのみを用いる。
     # @return [Fixnum] マイリストID
-    def isSeriesOf
+    def searchSeriesMl
       if !@available then
         puts "This movie object is not available."
-        return "failed"
-      end
-      
-      puts
-      puts "Start to discern the seriality of..."
-      puts "\svideo_id:\s\s" + @video_id
-      puts "\stitle:\s\s\s\s\s" + @title    
-      # extrMylist呼び出し
-      mylistIdAry = extrMylist
-      sMylistIdAry = []
-      mlObjAry = []
-      mylistId = nil
-      mylist = nil
-      similarity = 0.0
-      
-      mylistIdAry.each { |_mylistId|
-        belongsTo = isBelongsTo(_mylistId) { |mylistObj|        
-          similarity = mylistObj.getSimilarity 
-          puts "\sSimilarity:\t" + similarity.to_s
+        "failed"
+      else      
+        puts
+        puts "Start to discern the seriality of..."
+        puts "\svideo_id:\s\s" + @video_id
+        puts "\stitle:\s\s\s\s\s" + @title    
+        # extrMylist呼び出し
+        mylistIdAry = extrMylist
+        sMylistIdAry = []
+        mlObjAry = []
+        similarity = 0.0
+        belongsTo = nil
+
+        mylistIdAry.each { |_mylistId|
+          belongsTo = isBelongsTo(_mylistId) { |mylistObj|        
+            similarity = mylistObj.getSimilarity 
+            puts "\sSimilarity:\t" + similarity.to_s
+          }
+        
+          if belongsTo
+            puts "\s" + _mylistId.to_s + "\tis perecieved as series mylist."
+            sMylistIdAry.push(_mylistId)
+          end  
         }
-        puts belongsTo
-        if belongsTo && similarity > 0.7
-          puts "\s" + _mylistId.to_s + "\tis perecieved as series mylist."
-          sMylistIdAry.push(_mylistId)
-        end  
-      }
-      
-      sMylistIdAry.each { |mylistId|
-        mlObjAry.push( Nicos::Mylist.new(mylistId) )
-      }
-      
-      puts "\sDiscern logic terminated."
-      mlObjAry   
+
+        sMylistIdAry.each { |mylistId|
+          mlObjAry.push( Nicos::Mylist.new(mylistId) )
+        }
+
+        puts "\sDiscern logic terminated."
+        
+        {
+          :mylistObj  => mlObjAry,
+          :contained  => belongsTo,
+          :similarity => similarity
+        }   
+      end
     end
 
     # 動画説明文中からマイリストIDを示す文字列を抽出し、配列として返す。
@@ -134,13 +138,13 @@ module Nicos
         @available = true
       end
 
-      { 
-        :parsed  => parsed, 
+      {
+        :parsed  => parsed,
         :status  => status[:status],
         :retry   => status[:retry]
       }
     end
-    
+
     # インスタンスに対し、任意の情報を入れる。
     #
     # @param [HashObj] paramObj getThumbInfo等から手に入れたハッシュ

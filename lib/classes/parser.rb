@@ -10,7 +10,7 @@ require 'converter.rb'
 module Nicos
   module Parser
     def parseRow(symbol, type, doc)
-      hash = {}      
+      hash = {}
 
       value = case type
       when :Fixnum  then
@@ -18,7 +18,6 @@ module Nicos
         doc.value.to_i
       when :String  then 
         doc.read
-        p doc.value
         doc.value
       when :ISO8601 then 
         doc.read
@@ -33,7 +32,10 @@ module Nicos
       # for Mylist Atom
       when :mylistId then
         doc.read
-        Nicos::Extractor.mylistId(doc.value) 
+        Nicos::Extractor.mylistId(doc.value)
+      when :itemId then
+        doc.read
+        Nicos::Extractor.itemId(doc.value)
       when :videoId then
         doc.move_to_attribute("href")
         Nicos::Extractor.videoId(doc.value) 
@@ -230,7 +232,7 @@ module Nicos
             /(マイリスト )(.+)(‐ニコニコ動画)/ =~ parseRow(:title, :String,  doc)[:title]
             { :title => $2 }
           when "id"       then parseRow(:mylist_id,   :mylistId,doc)
-          when "subtitle" then parseRow(:description,  :String,  doc)
+          when "subtitle" then parseRow(:description, :String,  doc)
           when "updated"  then parseRow(:updated,     :ISO8601, doc)
           when "name"     then parseRow(:author,      :String,  doc)
           end
