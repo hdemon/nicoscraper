@@ -3,7 +3,6 @@ $:.unshift File.dirname(__FILE__)
 
 require 'rubygems'
 require 'time'
-require 'mechanize'
 require 'kconv'
 
 require 'parser.rb'
