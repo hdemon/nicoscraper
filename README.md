@@ -10,7 +10,7 @@ NicoScraper
 **Copyright:**  2011  
 **License:**  MIT License  
 **Latest Version:**  0.2.13  
-**Release Date:**  Oct 15th 2011  
+**Release Date:**  Oct 17th 2011  
  
 
 何をするライブラリ？
@@ -252,7 +252,6 @@ NicoScraper
 　メンテナンス時に限らず、稼働時にも稀に発生します。処理全体を中断することはなく、**再試行します。**
 
 **タイムアウト** `:timedOut`
-
 　**再試行します。**
 
 　再試行するメソッドの場合、ウェイトの`increment`の秒数、次回以降の1リクエスト毎のウェイトを増加させます。
