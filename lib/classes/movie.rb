@@ -24,18 +24,18 @@ module Nicos
     
     # 指定されたマイリストに自分が入っていれば、真を返す。 
     #
-    # 内部的にMylist::getInfoを利用しているため、もし指定したマイリストの他の情報を使いたければ、
+    # 内部的にMylist::getMoreInfoを利用しているため、もし指定したマイリストの他の情報を使いたければ、
     # ブロック中に処理を記述することで、getInfoの取得結果を共用することができる。
     # @param [Fixnum] mylistId マイリストID
     # @return [Boolean] 
     def isBelongsTo (mylistId, &block)
       isBelongs = false
       thisMl = Nicos::Mylist.new(mylistId)
-      thisMl.getInfo
-      
-      thisMl.movies.each { |movie|
+      thisMl.getMoreInfo
+
+      thisMl.movies.each do |movie|
         isBelongs = true if movie.video_id == @video_id
-      }   
+      end if thisMl.movies != nil   
     
       if isBelongs
         puts "\sThis movie is found in mylist/" + 
@@ -53,45 +53,41 @@ module Nicos
     #
     # isBelongsは指定されたマイリストとの関係を調べるが、isSeriesOfは動画説明文中のマイリストIDのみを用いる。
     # @return [Fixnum] マイリストID
-    def searchSeriesMl
+    def searchSeriesMl(threshold)
       if !@available then
         puts "This movie object is not available."
         "failed"
       else      
         puts
         puts "Start to discern the seriality of..."
-        puts "\svideo_id:\s\s" + @video_id
-        puts "\stitle:\s\s\s\s\s" + @title    
-        # extrMylist呼び出し
+        puts "\svideo_id:\s\s#{@video_id}"
+        puts "\stitle:\s\s\s\s\s#{@title}"   
+
         mylistIdAry = extrMylist
-        sMylistIdAry = []
-        mlObjAry = []
+        resultAry = []
+        mlobj = nil
         similarity = 0.0
         belongsTo = nil
 
         mylistIdAry.each { |_mylistId|
           belongsTo = isBelongsTo(_mylistId) { |mylistObj|        
             similarity = mylistObj.getSimilarity 
-            puts "\sSimilarity:\t" + similarity.to_s
+            puts "\sSimilarity:\t#{similarity}"
+            mlobj = mylistObj
           }
         
           if belongsTo
-            puts "\s" + _mylistId.to_s + "\tis perecieved as series mylist."
-            sMylistIdAry.push(_mylistId)
+            puts "\s#{_mylistId.to_s}\tis perecieved as series mylist."
+            resultAry.push({
+              :mylistObj  => mlobj,
+              :similarity => similarity
+            })
           end  
         }
 
-        sMylistIdAry.each { |mylistId|
-          mlObjAry.push( Nicos::Mylist.new(mylistId) )
-        }
-
         puts "\sDiscern logic terminated."
-        
-        {
-          :mylistObj  => mlObjAry,
-          :contained  => belongsTo,
-          :similarity => similarity
-        }   
+      
+        resultAry   
       end
     end
 
@@ -108,7 +104,7 @@ module Nicos
         extracted.each { |e|
           id = e.scan(/[0-9]{1,8}/)[0]
           mylistIdAry.push(id)
-          puts "\sID:\t" + id + " is extracted."
+          puts "\sID:\t#{id} is extracted."
         }
       else
         puts "\sMylistId is not found."
@@ -127,13 +123,13 @@ module Nicos
 
       con = Nicos::Connector::GetThumbInfo.new()
       host = 'ext.nicovideo.jp'
-      entity = '/api/getthumbinfo/' + @video_id
+      entity = "/api/getthumbinfo/#{@video_id}"
 
-      result = con.get(host, entity)
+      result = con.get(host, entity, '')
       status = con.getStatus
 
       if result[:order] == :afterTheSuccess
-        parsed = Nicos::Parser::getThumbInfo(result[:body])
+        parsed = Nicos::Parser::Xml::getThumbInfo(result[:body])
         set(parsed)
         @available = true
       end
@@ -169,7 +165,8 @@ module Nicos
         when "description",:description   then @description = param.to_s   
         when "length",    :length         then @length = param.to_i   
         when "first_retrieve", :first_retrieve then @first_retrieve = param       
-        
+        when "group_type",:group_type     then @group_type
+
         # MylistAPI 現在未実装    
         when "item_data"
           paramObj['item_data'].each_key do |key|

@@ -47,12 +47,12 @@ module Nicos
         paramAry.push("page=#{@page}") if @page != 1
         paramAry.push(sortStr)
         paramAry.push("rss=atom&numbers=1") if method == :atom
-        param = tag + "?" + paramAry.join('&')
+        param = "#{tag}?" + paramAry.join('&')
 
         host = 'www.nicovideo.jp'
-        entity = '/tag/' + param
+        entity = '/tag/'
 
-        @connector.get(host, entity)
+        @connector.get(host, entity, param)
       end
 
       def loop(tag, sort, method, &block)
@@ -160,7 +160,7 @@ module Nicos
       private 
 
       def parse(xml)
-        Nicos::Parser.tagAtom(xml)
+        Nicos::Parser::Xml.tagAtom(xml)
       end
 
       public

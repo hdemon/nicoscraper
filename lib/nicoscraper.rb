@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 module Nicos
-  VERSION = "0.2.6"
+  VERSION = "0.2.13"
   REPOSITORY =
     "http://github.com/hdemon/nicoscraper/"
   AUTHOR = "Masami Yonehara"

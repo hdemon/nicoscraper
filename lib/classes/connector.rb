@@ -19,6 +19,7 @@ module Nicos
           :limInCommunity => [],
           :notFound => [],
           :deleted => [],
+          :noMovie => [],
 
           :deniedSeqReq => 0,
           :serverIsBusy => 0,
@@ -64,6 +65,11 @@ module Nicos
         accessDisabled(:notFound) 
       end
 
+      def noMovie
+        puts "This movie/mylist contains no movie."
+        accessDisabled(:noMovie) 
+      end
+
       def deleted # マイリストは削除と404の区別がない？
         puts "This movie/mylist is deleted."
         accessDisabled(:deleted) 
@@ -72,8 +78,8 @@ module Nicos
       # 以下、再試行の可能性のある例外
 
       # 共通処理
-      def exception(exception, retryCount)
-        if retryCount <= @waitConfig[exception][:retryLimit]
+      def exception(exception)
+        if @retryCount <= @waitConfig[exception][:retryLimit]
           { :order => :skip }   
         else
           sleep @waitConfig[exception][:wait]
@@ -82,26 +88,25 @@ module Nicos
         end        
       end
 
-      def deniedSeqReq(retryCount)
+      def deniedSeqReq
         puts "Denied sequential requests."
-        exception(:deniedSeqReq, retryCount)
+        exception(:deniedSeqReq)
       end
 
-      def serverIsBusy(retryCount)
+      def serverIsBusy
         puts "The server is busy."
-        exception(:serverIsBusy, retryCount)
+        exception(:serverIsBusy)
       end
 
-      def serviceUnavailable(retryCount)
+      def serviceUnavailable
         puts "Service unavailable."
-        exception(:serviceUnavailable, retryCount)
+        exception(:serviceUnavailable)
       end
 
-      def timedOut(retryCount)
+      def timedOut
         puts "Request timed out."
-        exception(:timedOut, retryCount)
+        exception(:timedOut)
       end
-
 
       def reachedLast 
         # TagAtom専用。MylistAtomは、allDisabledと結果が被ってしまう。
@@ -156,40 +161,34 @@ module Nicos
     end
 
     class Xml < Connector
-      def get (host, entity)  
+      def get (host, entity, param)  
         response = nil
-        retryCount = 0
+        @retryCount = 0
         res = {}
               
         begin
-          @nowAccess = host + entity
+          @nowAccess = host + entity + param
           puts "Request to " + @nowAccess
           Net::HTTP.start(host, 80) { |http|
-            response = http.get(entity, HEADER)
+            response = http.get(entity + param, HEADER)
           }
-          retryCount += 1
+          @retryCount += 1
 
         rescue => e
           puts e
-        rescue Timeout::Error => e  
-          timeOut 
-          res[:order] = :retry     
-
+        rescue Timeout::Error => e
+          timedOut
+          res[:order] = :retry
         else
           res = case response
-          when Net::HTTPSuccess
+          when Net::HTTPSuccess then
             reviewRes( response.body.force_encoding("UTF-8") )
-          #    return response.body.force_encoding("UTF-8") 
           # when Net::HTTPRedirection
           #  fetch(response['location'], limit - 1)
-          when Net::HTTPForbidden
-            forbidden         
-          when Net::HTTPNotFound
-            notFound
-          when Net::HTTPServiceUnavailable 
-            serviceUnavailable
-          else
-            unknownError
+          when Net::HTTPForbidden           then forbidden         
+          when Net::HTTPNotFound            then notFound
+          when Net::HTTPServiceUnavailable  then serviceUnavailable
+          else unknownError
           end    
         end until res[:order] != :retry
 
@@ -257,139 +256,22 @@ module Nicos
       end
     end
 
-=begin
-    class HtmlConnector < Connector
-      def initialize(mode)
-        @mode = mode
-        # デフォルトのウェイト設定
-        @@waitConfig = {
-          'consec_count'  => 10,  # 連続してリクエストする回数
-          'consec_wait'   => 10,  # 連続リクエスト後のウェイト
-          'each'          => 10,  # 連続リクエスト時の、1リクエスト毎のウェイト
-     
-          '200-abnormal'  => 300, # アクセス拒絶時（「短時間での連続アクセスは・・・」）の場合の再試行までの時間
-          'unavailable'   => 10,
-          '403'           => 300, # "403"時の再試行までのウェイト
-          '404'           => 300, # "403"時の再試行までのウェイト
-          'increment'     => 1,   # アクセス拒絶時の、次回以降の1リクエスト毎のウェイトの増加量
-
-          'timeout'       => 10,  # タイムアウト時の、再試行までのウェイト
-          '500'           => 10,  # "500"時の再試行までのウェイト
-          '503'           => 10,  # "503"時の再試行までのウェイト
-     
-          'retryLimit'    => 3    # 再試行回数の限度
-        }
-        
-        # 1つの検索結果画面に表示される動画の数。現時点では32個がデフォルトの模様。
-        @NumOfSearched = 32
-
-        @mech = Mechanize.new
-        # メモリ節約のため、Mechanizeの履歴機能を切る。
-        @mech.max_history = 1
-
-        @consec_count = 0
+    class MylistHtml < Xml 
+      def forbidden
+        # マイリストが非公開の場合、html/Atomのどちらへのリクエストであっても、403が返ってくる。
+        notPublic
       end
-      
-      public 
-
-      def errorStatus(ex)
-        # 再試行回数が
-        @retryTime += 1
-        if @retryTime >= @wait['allowance_time']
-          return false
-        end
-
-        case ex.response_code
-        when '403' then
-          sleep @wait['403']
-          warn "403"
-        when '500' then
-          sleep @wait['500']
-          warn "500"
-        when '503' then
-          sleep @wait['503']
-          warn "503"
+            
+      def reviewRes(resBody)
+        r = resBody.force_encoding("UTF-8")
+        if # アクセス集中時
+          /大変ご迷惑をおかけいたしますが、しばらく時間をあけてから再度検索いただくようご協力をお願いいたします。/ =~ r then
+          serverIsBusy
         else
-          warn "Server error: #{ex.code}"
-          return false
-        end
-     
-        @connection = false
-        @failed += 1
+          succeeded(resBody)       
+        end      
       end
-
-      def htmlReq (url, request, procedure)
-        @failed = 0
-
-        # 再試行ループ
-        begin
-          eachWait 
-          @connection = nil
-          request.call(url)
-        
-        # タイムアウト時処理
-        rescue TimeoutError
-          timeOut
-          retry
-           
-        # Mechanizeでアクセスし、200以外のステータスが返ってきた時
-        # 実際に該当するコードが返ってきたことがないので、正常に動くか不明   
-        rescue Mechanize::ResponseCodeError => ex
-          if errorStatus(ex) then retry
-          else break end
-           
-        # HTTP Status:200時の処理
-        else
-          procedure.call
-          
-          # 失敗カウントが指定回数を超えたらループを終わる。
-          if @failed >= @wait['allowance_time'] then
-            puts 'Exceeded the limit of retry time.'
-            @connection = false
-            break
-          end
-        end until @connection
-
-        # 連続アクセスカウント+1
-        @consec_count += 1
-        # 成功 = true / 失敗 = false
-        return @connection
-      end
-
-      def htmlGet (host, entity)
-        htmlReq(
-          host + entity,
-          lambda { |url|
-            t = Thread.new do
-              @mech.get(url)
-              puts "Requesting for " + url
-            end
-            t.join
-          },
-          # HTTP Status:200時の処理 
-          lambda {
-            # 連続アクセス拒絶メッセージが返ってきた時       
-            if /短時間での連続アクセスはご遠慮ください/ =~ @mech.page.search('/html').text then
-              puts 'Access rejected.'
-              @connection = false
-              @failed += 1
-         
-              # ウェイトを置いた後、今後のページ毎のウェイトを増やす。
-              puts 'Waiting for ' + @wait['rejected'] + 's.'
-              sleep @wait['rejected']
-              @wait['each'] += @wait['increment']
-              puts 'Increased each @wait by ' + @wait['increment'] + 'sec.'
-            else
-              @connection = true
-            end
-          }
-        )
-        
-        return @mech.page
-      end
-      
-      attr_reader :mech
     end
-=end
-  end
+
+  end # end of connector
 end

@@ -1,8 +1,6 @@
 source "http://rubygems.org"
 
-gem "damerau-levenshtein", ">= 0.5.3"
 gem "libxml-ruby", ">= 2.2.2"
-gem "mechanize", ">=2.0.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

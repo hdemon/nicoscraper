@@ -1,32 +1,33 @@
 # -*- encoding: utf-8 -*-
-#$:.unshift File.dirname(__FILE__) + "/../lib"
+# $:.unshift File.dirname(__FILE__) + "/../lib"
 
 require '../lib/nicoscraper.rb'
 
-describe Nicos::Mylist, "After executiton of 'getInfo' method" +
+
+describe Nicos::Mylist, "After executiton of 'getMoreInfo' method" +
     "And for example, with passing argument (15196568)" do  
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
-    @mylist.getInfo
-    p @mylist
+    @mylist.getMoreInfo
   end
 
   it "should have the following values" do
     @mylist.available    .should be_true
   
-    @mylist.mylist_id    .should == 15196568
-    @mylist.user_id      .should be_nil
+    @mylist.mylist_id    .should equal(15196568)
+    @mylist.user_id      .should equal(1934563)
+    @mylist.author       .should == "おぽこ"
+
     @mylist.title        .should == "【Oblivion】おっさんの大冒険"
     @mylist.description  .should_not be_nil
-    @mylist.public       .should be_nil
-    @mylist.default_sort .should be_nil
-    @mylist.create_time  .should be_nil
+    @mylist.public       .should_not be_nil
+    @mylist.default_sort .should_not be_nil
+    @mylist.create_time  .should_not be_nil
     @mylist.update_time  .should_not be_nil
 
-    @mylist.icon_id      .should be_nil
+    @mylist.icon_id      .should_not be_nil
     @mylist.movies       .should_not be_nil
     @mylist.movies       .should be_kind_of(Array)
-    @mylist.author       .should == "おぽこ"
   end 
 
   it "should have Movie class instances. and these have the following structure." do
@@ -47,6 +48,7 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
     movieObj.description    .should_not be_nil
     movieObj.thumbnail_url  .should_not be_nil
     movieObj.length         .should_not be_nil
+    movieObj.length         .should_not == 0
 
     movieObj.view_counter   .should_not == 0
     movieObj.comment_num    .should_not == 0
@@ -63,7 +65,7 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   end
 
   it "should " do
-    r = @mylist.getInfo
+    r = @mylist.getMoreInfo
     r[:status]  .should === :notFound
     r[:result]  .should be_nil
 
@@ -79,7 +81,7 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   end
 
   it "should " do
-    r = @mylist.getInfo
+    r = @mylist.getMoreInfo
     r[:status]  .should === :notPublic
     r[:result]  .should be_nil
 
@@ -95,7 +97,7 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   end
 
   it "should " do
-    r = @mylist.getInfo
+    r = @mylist.getMoreInfo
     # r["status]  .should === :deleted
     r[:status]  .should === :notFound
     r[:result]  .should be_nil
@@ -108,7 +110,7 @@ end
 describe Nicos::Mylist, "After executiton of 'getInfo' method" do  
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
-    @mylist.getInfo
+    @mylist.getMoreInfo
   end
 
   it "should return over 0.9 when execute 'getSimilarity' method." +
@@ -118,6 +120,3 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" do
     result .should >= 0.7
   end
 end
-
-
-
