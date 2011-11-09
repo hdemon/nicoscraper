@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{nicoscraper}
-  s.version = "0.2.14"
+  s.version = "0.2.15"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Masami Yonehara}]
-  s.date = %q{2011-10-17}
+  s.date = %q{2011-11-09}
   s.description = %q{It scrape movies and mylists of Niconico douga.
   }
   s.email = %q{zeitdiebe@gmail.com}
@@ -38,8 +38,8 @@ Gem::Specification.new do |s|
     "lib/config/wait.rb",
     "lib/nicoscraper.rb",
     "nicoscraper.gemspec",
-    "test/movie_spec.rb",
-    "test/mylist_getmoreinfo_spec.rb",
+    "test/movie_getinfo_spec.rb",
+    "test/mylist_gethtmlinfo_spec.rb",
     "test/mylist_spec.rb",
     "test/searcher_spec.rb"
   ]
