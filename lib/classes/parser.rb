@@ -55,43 +55,56 @@ module Nicos
 
           tags = []
           lockedTags = []
-              category = nil
-              lock = nil
+          category = nil
+          locked = false
+          prev = nil
+          now = nil
 
           while doc.read
             unless doc.node_type == XML::Reader::TYPE_END_ENTITY
-              break if doc.name === "tags"
+              # 終了を判別。もっと環境に依存しない上手いやり方があるはず。
+              break if doc.name == "tags"
 
-              if category == nil
-                doc.move_to_attribute("category")
-                if doc.name === "category"
-                  doc.read
-                  category = doc.value 
-                  doc.read
-                end
+              if prev == :end
+                category = false
+                locked = false
               end
+
+              doc.move_to_attribute("category")
+              category = true if doc.name == "category"
 
               doc.move_to_attribute("lock")
-              if doc.name === "lock"
-                lock = true
-                doc.read
-                doc.read
-              else lock = false
+              locked = true if doc.name == "lock"
+
+              # ノードの開始、値、終了を判別する。
+              # 例えば<tag>と<tag lock="1"/>が、どちらも'2'と解釈され、開始と終了が区別しづらい。
+              #http://dotgnu.org/pnetlib-doc/System/Xml/XmlNodeType.html
+              nt = doc.node_type 
+              now = if (nt == 2 || nt == 1) && prev != :val then :start
+              elsif (nt == 2 || nt == 15) && prev == :val then :end
+              elsif nt == 3 then :val
               end
 
-              doc.read_inner_xml
-              if doc.value != nil  
-                if lock then lockedTags.push(doc.value) 
-                else tags.push(doc.value) end
-              end   
+              val = doc.read_outer_xml
+
+              #puts
+              #puts now              
+              #puts val
+              #puts "cat:#{category} locked:#{locked}"
+
+              if now == :val
+                obj = { "value" => val }
+                obj.merge!({ :locked => true }) if locked == true
+                obj.merge!({ :category => true }) if category == true
+
+                tags.push(obj)
+              end
+
+              prev = now
             end
           end
 
-          {
-            :category => category,
-            :tags     => tags,
-            :lockedTags => lockedTags
-          }
+          tags
         end 
 
         hash[symbol] = value
@@ -335,7 +348,7 @@ module Nicos
 
         /(description:\s\")([^"]{1,})/ =~ s
         description = $2
-        
+
         /(id:\s)([0-9]{1,})/ =~ s
         mylist_id   = $2     
            

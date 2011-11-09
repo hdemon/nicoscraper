@@ -4,11 +4,11 @@
 require '../lib/nicoscraper.rb'
 
 
-describe Nicos::Mylist, "After executiton of 'getMoreInfo' method" +
+describe Nicos::Mylist, "After executiton of 'getHtmlInfo' method" +
     "And for example, with passing argument (15196568)" do  
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
-    @mylist.getMoreInfo
+    @mylist.getHtmlInfo
   end
 
   it "should have the following values" do
@@ -65,7 +65,7 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   end
 
   it "should " do
-    r = @mylist.getMoreInfo
+    r = @mylist.getHtmlInfo
     r[:status]  .should === :notFound
     r[:result]  .should be_nil
 
@@ -81,7 +81,7 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   end
 
   it "should " do
-    r = @mylist.getMoreInfo
+    r = @mylist.getHtmlInfo
     r[:status]  .should === :notPublic
     r[:result]  .should be_nil
 
@@ -97,7 +97,7 @@ describe Nicos::Mylist, "After executiton of 'getInfo' method" +
   end
 
   it "should " do
-    r = @mylist.getMoreInfo
+    r = @mylist.getHtmlInfo
     # r["status]  .should === :deleted
     r[:status]  .should === :notFound
     r[:result]  .should be_nil
@@ -110,7 +110,7 @@ end
 describe Nicos::Mylist, "After executiton of 'getInfo' method" do  
   before(:all) do
     @mylist = Nicos::Mylist.new(15196568)
-    @mylist.getMoreInfo
+    @mylist.getHtmlInfo
   end
 
   it "should return over 0.9 when execute 'getSimilarity' method." +

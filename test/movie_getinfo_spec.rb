@@ -9,6 +9,7 @@ describe Nicos::Movie, "After executiton of 'getInfo' method." +
   before(:all) do
     @movie = Nicos::Movie.new("sm1097445")
     @result = @movie.getInfo
+    p @movie
   end
 
   it "should have the following structure and values." do
@@ -33,16 +34,17 @@ describe Nicos::Movie, "After executiton of 'getInfo' method." +
     @movie.thumb_type   .should == "video"
     @movie.embeddable   .should == 1
     @movie.no_live_play .should == 0
-    @movie.tags_jp      .should_not be_nil
+    @movie.tags_jp      .should have_at_least(1).items
+    @movie.tags_jp      .should have_at_most(12).items
     @movie.tags_tw      .should_not be_nil
     @movie.user_id      .should == 70391
   end    
 
   it "should return true when execute 'isBelongsTo' method." +
       "with passing arguments (1450136)" do
-    result = @movie.isBelongsTo(1450136)
-    result .should_not be_nil
-    result .should be_true
+    @result = @movie.isBelongsTo(1450136)
+    @result .should_not be_nil
+    @result .should be_true
   end
 
   it "should return the following values." do

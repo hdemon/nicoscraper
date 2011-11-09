@@ -82,7 +82,7 @@ module Nicos
           status = { :page => @page, :results => @connector.result}
           order = block.call(movieObjAry, status)
           @page += 1
-        end until order != "continue"
+        end until order != "continue" || order != :continue
       end
 
       public
@@ -171,13 +171,19 @@ module Nicos
       #==基本的な使い方
       #  require 'nicoscraper'
       #  
+      #  count = 0
+      #
       #  searcher = Nicos::Searcher::ByTag.new()
       #  searcher.execute('VOCALOID', :view_many) {
       #    |result, status|
-      #  
+      #    
+      #    count += 1
+      #
       #    result.each { |movieObj|
       #      puts movieObj.title 
       #    }  
+      #
+      #    :continue unless count >= 3
       #  }
       #
       #  result ----
@@ -193,12 +199,18 @@ module Nicos
       #  ...
       #
       #　　Nicos::Searcher::ByTagのインスタンスを作り、executeメソッドに引数を与えて実行します。
-      # 結果がブロックの第1仮引数に渡されます。
-      # 渡される結果はMovieクラスのインスタンスを含む配列です。
+      # 結果がブロックの第1仮引数に渡されます。渡される結果はMovieクラスのインスタンスを含む配列ですが、
+      # MovieクラスのgetInfo、getHtmlInfoメソッドと全く同じではありません。これは、検索ページ/RSSから
+      # 動画情報を取得しており、先の2メソッドとは異なる取得元だからです。
       #
       #==スクレイプの継続について
       #
-      # 　ニコニコ動画の検索結果は、指定した数を一度に取得できる訳ではありません。
+      #　　スクレイプは、ブロック内で明示的に ':continue' あるいは '"continue"' を返さない限り、1リクエストで
+      # 終了します。これは、意図せざる過剰アクセスを防ぐための措置です。上の例では、3回アクセスすると終了します。
+      # 帰ってきた動画インスタンスの情報を利用することで、一定の投稿日までさかのぼって取得するなどの処理も可能です
+      # （トップの例を参照）。
+      #
+      # 　また、ニコニコ動画の検索結果は、指定した数を一度に取得できる訳ではありません。
       # なぜなら、現状では検索結果はHTML1ページ、もしくは1つのRSS/Atomフィードに32個を限度に渡される方式であり、
       # ByTagクラスがその結果を利用する以上、32個=1単位という制約のもとに置かれるからです。
       # 従って、例えば最新の投稿100個の情報が欲しいとしても、1回のリクエストでは手に入らず、

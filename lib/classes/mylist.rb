@@ -115,36 +115,34 @@ module Nicos
     #
     # @return [Fixnum] Trigram法による、
     def getInfo
-      parsed = nil
       @available = false
 
       res = connect( 
         Nicos::Connector::MylistAtom.new(), 
         :atom )
-      parse = parse(res[:result]) do |result|
+      parsed = parse(res[:result]) do |result|
         Nicos::Parser::Xml::mylistAtom(result[:body])
       end
 
       { 
-        :parsed  => parse, 
+        :parsed  => parsed, 
         :status  => res[:status][:status],
         :retry   => res[:status][:retry]
       }      
     end  
 
-    def getMoreInfo
-      parsed = nil
+    def getHtmlInfo
       @available = false
 
       res = connect( 
         Nicos::Connector::MylistHtml.new(),
         :html )
-      parse = parse(res[:result]) do |result|
+      parsed = parse(res[:result]) do |result|
         Nicos::Parser::Html::mylist(result[:body])
       end
 
       { 
-        :parsed  => parse, 
+        :parsed  => parsed, 
         :status  => res[:status][:status],
         :retry   => res[:status][:retry]
       }      

@@ -23,14 +23,14 @@ module Nicos
     
     # 指定されたマイリストに自分が入っていれば、真を返す。 
     #
-    # 内部的にMylist::getMoreInfoを利用しているため、もし指定したマイリストの他の情報を使いたければ、
+    # 内部的にMylist::getHtmlInfoを利用しているため、もし指定したマイリストの他の情報を使いたければ、
     # ブロック中に処理を記述することで、getInfoの取得結果を共用することができる。
     # @param [Fixnum] mylistId マイリストID
     # @return [Boolean] 
     def isBelongsTo (mylistId, &block)
       isBelongs = false
       thisMl = Nicos::Mylist.new(mylistId)
-      thisMl.getMoreInfo
+      thisMl.getHtmlInfo
 
       thisMl.movies.each do |movie|
         isBelongs = true if movie.video_id == @video_id
@@ -456,7 +456,7 @@ module Nicos
 
     # 日本語タグ
     #
-    # @return [Array<String>]
+    # @return [Array<Hash>]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
     # {Nicos::Movie#getInfo Movie::getHtmlInfo}  
@@ -464,7 +464,7 @@ module Nicos
 
     # 台湾タグ
     #
-    # @return [Array<String>]
+    # @return [Array<Hash>]
     # <b>取得可能なメソッド</b>  
     # {Nicos::Movie#getInfo Movie::getInfo}  
     attr_accessor :tags_tw
