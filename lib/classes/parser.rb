@@ -93,7 +93,7 @@ module Nicos
               #puts "cat:#{category} locked:#{locked}"
 
               if now == :val
-                obj = { "value" => val }
+                obj = { :name => val }
                 obj.merge!({ :locked => true }) if locked == true
                 obj.merge!({ :category => true }) if category == true
 

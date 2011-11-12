@@ -1,9 +1,10 @@
 # -*- encoding: utf-8 -*-
 module Nicos
-  VERSION = "0.2.13"
+  VERSION = "0.2.15.2"
   REPOSITORY =
     "http://github.com/hdemon/nicoscraper/"
   AUTHOR = "Masami Yonehara"
+  MAIL = "hdemon7@gmail.com"
     
   # nicos.rbが存在する絶対パスを取得
   ROOT = File.expand_path(File.dirname(__FILE__))

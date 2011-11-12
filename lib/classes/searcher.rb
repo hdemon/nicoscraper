@@ -56,7 +56,7 @@ module Nicos
 
       def loop(tag, sort, method, &block)
         @page = 1
-        order       = ""
+        order = nil
 
         begin
           movieObjAry = []
@@ -82,7 +82,7 @@ module Nicos
           status = { :page => @page, :results => @connector.result}
           order = block.call(movieObjAry, status)
           @page += 1
-        end until order != "continue" || order != :continue
+        end until order != "continue" && order != :continue
       end
 
       public
