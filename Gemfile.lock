@@ -1,13 +1,15 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    git (1.2.5)
+    git (1.11.0)
+      rchardet (~> 1.8)
     jeweler (1.6.4)
       bundler (~> 1.0)
       git (>= 1.2.5)
       rake
     libxml-ruby (2.2.2)
     rake (0.9.2)
+    rchardet (1.8.0)
     rcov (0.9.10)
     shoulda (2.11.3)
 
